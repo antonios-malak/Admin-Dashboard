@@ -31,6 +31,20 @@ export const useProductsStore = defineStore('products', {
         console.error('Create product error:', error)
       }
     },
+
+    async updateProduct(id: number, product: any) {
+      try {
+        const response = await api.put(`/api/products/${id}`, product)
+        const index = this.products.findIndex(p => p.id === id)
+        if (index !== -1) {
+          this.products[index] = response.data
+        }
+        notify('success', 'Product updated successfully', 'Success')
+      } catch (error: any) {
+        notify('error', 'Failed to update product', 'Error')
+        console.error('Update product error:', error)
+      }
+    },
     
     async deleteProduct(id: number) {
       try {

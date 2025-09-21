@@ -31,6 +31,20 @@ export const useCategoriesStore = defineStore('categories', {
         console.error('Create category error:', error)
       }
     },
+
+    async updateCategory(id: number, category: any) {
+      try {
+        const response = await api.put(`/api/categories/${id}`, category)
+        const index = this.categories.findIndex(c => c.id === id)
+        if (index !== -1) {
+          this.categories[index] = response.data
+        }
+        notify('success', 'Category updated successfully', 'Success')
+      } catch (error: any) {
+        notify('error', 'Failed to update category', 'Error')
+        console.error('Update category error:', error)
+      }
+    },
     
     async deleteCategory(id: number) {
       try {

@@ -7,38 +7,39 @@
   <div class="p-6">
     <PageHeader title="Statistics" />
     <div class="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
-      <el-card v-for="item in statisticsData" :key="item.id" class="stat-card text-center">
-        <div class="text-3xl font-bold text-blue-600 mb-2">{{ item.value }}</div>
-        <div class="text-gray-600 capitalize">{{ item.label }}</div>
+      <el-card v-for="(stat, index) in stats" :key="index" class="stat-card text-center">
+        <div class="text-3xl font-bold text-blue-600 mb-2">{{ stat.value }}</div>
+        <div class="text-gray-600 capitalize">{{ stat.key }}</div>
       </el-card>
     </div>
-    <!-- DataTable for products and categories will be added here -->
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
-import { useStatisticsStore } from '@/stores/statistics'
+import { ref, onMounted } from 'vue'
+import api from '@/utils/api'
 import PageHeader from '@/components/PageHeader.vue'
 
-const store = useStatisticsStore()
-
-const statisticsData = computed(() => {
-  return Object.entries(store.stats).map(([key, value]) => ({
-    id: key,
-    key,
-    value,
-    label: formatKey(key)
-  }))
-})
-
-onMounted(() => {
-  store.fetchStatistics()
-})
-
-function formatKey(key: string) {
-  return key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())
+const stats = ref<any>()
+const loading = ref(false)
+const fetchStats = async () => {
+  loading.value = true
+  try {
+    const response = await api.get('/api/stats')
+    // If response.data is an object, convert it to an array of { key, value } objects
+    if (Array.isArray(response.data)) {
+      stats.value = response.data
+    } else {
+      stats.value = Object.entries(response.data).map(([key, value]) => ({ key, value }))
+    }
+  } catch (error) {
+    console.error('Failed to fetch stats:', error)
+  } finally {
+    loading.value = false
+  }
 }
+
+onMounted(fetchStats)
 </script>
 
 <style scoped>

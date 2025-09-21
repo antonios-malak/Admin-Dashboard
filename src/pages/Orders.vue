@@ -22,7 +22,7 @@
       <DataTable
         :data="paginatedData"
         :columns="columns"
-        :loading="loading"
+        :loading="store.loading"
         empty-message="No orders found"
       >
       <template #products="{ row }">
@@ -50,7 +50,7 @@
         <ClickableStatusTag 
           :status="row.status" 
           :status-options="statusOptions"
-          :loading="loading"
+          :loading="store.loading"
           @status-change="(newStatus) => handleStatusChange(row.id, newStatus)"
         />
       </template>
@@ -65,8 +65,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
-import api, { updateOrderStatus } from '@/utils/api'
-import { notify } from '@/utils/notify'
+import { useOrdersStore } from '@/stores/orders'
 
 // Components
 import PageHeader from '@/components/PageHeader.vue'
@@ -76,8 +75,7 @@ import SearchInput from '@/components/SearchInput.vue'
 import LocalPagination from '@/components/LocalPagination.vue'
 import StatusFilter from '@/components/StatusFilter.vue'
 
-const orders = ref([])
-const loading = ref(false)
+const store = useOrdersStore()
 const searchQuery = ref('')
 const statusFilter = ref<string | null>(null)
 
@@ -92,7 +90,7 @@ const statusOptions = [
 
 // Filtered orders based on search query and status filter
 const filteredOrders = computed(() => {
-  let filtered = orders.value
+  let filtered = store.orders
 
   // Apply search filter
   if (searchQuery.value) {
@@ -123,21 +121,8 @@ const columns = [
 ]
 
 onMounted(() => {
-  fetchOrders()
+  store.fetchOrders()
 })
-
-async function fetchOrders() {
-  try {
-    loading.value = true
-    const response = await api.get('/api/orders')
-    orders.value = response.data
-  } catch (error: any) {
-    notify('error', 'Failed to fetch orders', 'Error')
-    console.error('Orders error:', error)
-  } finally {
-    loading.value = false
-  }
-}
 
 function formatDate(dateString: string) {
   if (!dateString) return ''
@@ -157,22 +142,6 @@ function handleStatusFilter(status: string | null) {
 }
 
 async function handleStatusChange(orderId: number, newStatus: string) {
-  try {
-    loading.value = true
-    await updateOrderStatus(orderId, newStatus)
-    
-    // Update the order status in the local state
-    const orderIndex = orders.value.findIndex((order: any) => order.id === orderId)
-    if (orderIndex !== -1) {
-      ;(orders.value[orderIndex] as any).status = newStatus
-    }
-    
-    notify('success', 'Order status updated successfully', 'Success')
-  } catch (error) {
-    notify('error', 'Failed to update order status', 'Error')
-    console.error('Failed to update order status:', error)
-  } finally {
-    loading.value = false
-  }
+  await store.updateOrderStatus(orderId, newStatus)
 }
 </script>

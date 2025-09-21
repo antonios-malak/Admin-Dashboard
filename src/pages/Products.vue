@@ -28,13 +28,20 @@
         :data="paginatedData"
         :columns="columns"
         :loading="store.loading"
-        :show-actions="true"
         empty-message="No products found"
       >
         <template #status="{ row }">
           <StatusTag :status="row.stock > 0 ? 'in stock' : 'out of stock'" />
         </template>
         <template #actions="{ row }">
+          <el-button 
+            type="primary" 
+            size="small" 
+            @click="handleEdit(row)"
+            class="mr-2"
+          >
+            <el-icon><Edit /></el-icon>
+          </el-button>
           <el-button 
             type="danger" 
             size="small" 
@@ -57,6 +64,18 @@
       @submit="handleSubmit"
       @close="resetForm"
     />
+
+    <!-- Edit Product Dialog -->
+    <FormDialog
+      v-model:visible="showEditForm"
+      v-model:model-value="form"
+      title="Edit Product"
+      :fields="formFields"
+      :rules="rules"
+      :loading="submitting"
+      @submit="handleSubmit"
+      @close="resetForm"
+    />
   </div>
 </template>
 
@@ -64,7 +83,7 @@
 import { ref, reactive, onMounted, computed } from 'vue'
 import { useProductsStore } from '@/stores/products'
 import { useCategoriesStore } from '@/stores/categories'
-import { Delete } from '@element-plus/icons-vue'
+import { Delete, Edit } from '@element-plus/icons-vue'
 import { ElMessageBox } from 'element-plus'
 
 // Components
@@ -79,9 +98,11 @@ import StatusFilter from '@/components/StatusFilter.vue'
 const store = useProductsStore()
 const categoriesStore = useCategoriesStore()
 const showAddForm = ref(false)
+const showEditForm = ref(false)
 const submitting = ref(false)
 const searchQuery = ref('')
 const statusFilter = ref<string | null>(null)
+const editingProduct = ref<any>(null)
 
 // Status options for products (based on stock status)
 const statusOptions = [
@@ -132,36 +153,31 @@ const formFields = [
   {
     prop: 'name',
     label: 'Name',
-    type: 'input' as const,
+    type: 'input',
     required: true,
     placeholder: 'Enter product name'
   },
   {
     prop: 'price',
     label: 'Price',
-    type: 'number' as const,
+    type: 'number',
     required: true,
-    min: 0,
-    step: 1,
-    precision: 2
+    min: 0
   },
   {
     prop: 'stock',
     label: 'Stock',
-    type: 'number' as const,
+    type: 'number',
     required: true,
     min: 0
   },
   {
     prop: 'category',
     label: 'Category',
-    type: 'select' as const,
+    type: 'select',
     required: true,
     placeholder: 'Select category',
-    filterable: true,
-    options: categoriesStore.categories,
-    optionLabel: 'name',
-    optionValue: 'name'
+    options: categoriesStore.categories
   }
 ]
 
@@ -181,15 +197,28 @@ async function handleSubmit(formData: any) {
   try {
     submitting.value = true
     
-    await store.createProduct({
-      name: formData.name,
-      price: parseFloat(formData.price),
-      stock: parseInt(formData.stock),
-      category: formData.category,
-      status: formData.status
-    })
+    if (editingProduct.value) {
+      // Update existing product
+      await store.updateProduct(editingProduct.value.id, {
+        name: formData.name,
+        price: parseFloat(formData.price),
+        stock: parseInt(formData.stock),
+        category: formData.category,
+        status: formData.status
+      })
+      showEditForm.value = false
+    } else {
+      // Create new product
+      await store.createProduct({
+        name: formData.name,
+        price: parseFloat(formData.price),
+        stock: parseInt(formData.stock),
+        category: formData.category,
+        status: formData.status
+      })
+      showAddForm.value = false
+    }
     
-    showAddForm.value = false
     resetForm()
   } catch (error) {
     console.error('Form submission failed:', error)
@@ -198,7 +227,19 @@ async function handleSubmit(formData: any) {
   }
 }
 
+function handleEdit(product: any) {
+  editingProduct.value = product
+  Object.assign(form, {
+    name: product.name,
+    price: product.price.toString(),
+    stock: product.stock.toString(),
+    category: product.category,
+  })
+  showEditForm.value = true
+}
+
 function resetForm() {
+  editingProduct.value = null
   Object.assign(form, {
     name: '',
     price: '',

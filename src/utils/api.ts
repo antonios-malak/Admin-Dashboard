@@ -26,25 +26,6 @@ api.interceptors.response.use(
   }
 )
 
-// Status update functions
-export const updateReportStatus = async (reportId: number, status: string) => {
-  try {
-    const response = await api.post(`/api/reports/${reportId}/status`, { status })
-    return response.data
-  } catch (error) {
-    console.error('Error updating report status:', error)
-    throw error
-  }
-}
 
-export const updateOrderStatus = async (orderId: number, status: string) => {
-  try {
-    const response = await api.post(`/api/orders/${orderId}/status`, { status })
-    return response.data
-  } catch (error) {
-    console.error('Error updating order status:', error)
-    throw error
-  }
-}
 
 export default api

@@ -27,16 +27,23 @@
         :data="paginatedData"
         :columns="columns"
         :loading="store.loading"
-        :show-actions="true"
         empty-message="No categories found"
       >
         <template #actions="{ row }">
+          <el-button 
+            type="primary" 
+            size="small" 
+            @click="handleEdit(row)"
+            class="mr-2"
+          >
+            <el-icon><Edit /></el-icon>
+          </el-button>
           <el-button 
             type="danger" 
             size="small" 
             @click="handleDelete(row.id)"
           >
-            Delete
+            <el-icon><Delete /></el-icon>
           </el-button>
         </template>
       </DataTable>
@@ -54,12 +61,26 @@
       @submit="handleSubmit"
       @close="resetForm"
     />
+
+    <!-- Edit Category Dialog -->
+    <FormDialog
+      v-model:visible="showEditForm"
+      v-model:model-value="form"
+      title="Edit Category"
+      :fields="formFields"
+      :rules="rules"
+      :loading="submitting"
+      width="400px"
+      @submit="handleSubmit"
+      @close="resetForm"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, onMounted, computed } from 'vue'
 import { useCategoriesStore } from '@/stores/categories'
+import { Delete, Edit } from '@element-plus/icons-vue'
 import { ElMessageBox } from 'element-plus'
 
 // Components
@@ -71,8 +92,10 @@ import LocalPagination from '@/components/LocalPagination.vue'
 
 const store = useCategoriesStore()
 const showAddForm = ref(false)
+const showEditForm = ref(false)
 const submitting = ref(false)
 const searchQuery = ref('')
+const editingCategory = ref<any>(null)
 
 const form = reactive({
   name: '',
@@ -100,14 +123,14 @@ const formFields = [
   {
     prop: 'name',
     label: 'Name',
-    type: 'input' as const,
+    type: 'input',
     required: true,
     placeholder: 'Enter category name'
   },
   {
     prop: 'description',
     label: 'Description',
-    type: 'textarea' as const,
+    type: 'textarea',
     placeholder: 'Enter category description',
     rows: 3
   }
@@ -125,12 +148,22 @@ async function handleSubmit(formData: any) {
   try {
     submitting.value = true
     
-    await store.createCategory({
-      name: formData.name,
-      description: formData.description
-    })
+    if (editingCategory.value) {
+      // Update existing category
+      await store.updateCategory(editingCategory.value.id, {
+        name: formData.name,
+        description: formData.description
+      })
+      showEditForm.value = false
+    } else {
+      // Create new category
+      await store.createCategory({
+        name: formData.name,
+        description: formData.description
+      })
+      showAddForm.value = false
+    }
     
-    showAddForm.value = false
     resetForm()
   } catch (error) {
     console.error('Form submission failed:', error)
@@ -139,7 +172,17 @@ async function handleSubmit(formData: any) {
   }
 }
 
+function handleEdit(category: any) {
+  editingCategory.value = category
+  Object.assign(form, {
+    name: category.name,
+    description: category.description
+  })
+  showEditForm.value = true
+}
+
 function resetForm() {
+  editingCategory.value = null
   Object.assign(form, {
     name: '',
     description: ''

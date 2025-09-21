@@ -1,10 +1,10 @@
 <template>
   <div class="sidebar-container">
-    <div >
+    <!-- <div >
       <router-link to="/" class= " block text-center py-5">
         <img src="../../assets/imgs/logo.png" alt="Logo" class="inline h-8 w-6 mx-auto" />
       </router-link>
-    </div>
+    </div> -->
     <el-menu 
       router 
       default-active="/" 

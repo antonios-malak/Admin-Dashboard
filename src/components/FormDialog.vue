@@ -25,7 +25,6 @@
           v-model="modelValue[field.prop]"
           :type="field.inputType || 'text'"
           :placeholder="field.placeholder"
-          :step="field.step"
           v-bind="field.props"
         />
         
@@ -44,14 +43,14 @@
           v-else-if="field.type === 'select'" 
           v-model="modelValue[field.prop]"
           :placeholder="field.placeholder"
-          :filterable="field.filterable"
+          filterable
           v-bind="field.props"
         >
           <el-option
             v-for="option in field.options"
-            :key="getOptionValue(option, field)"
-            :label="getOptionLabel(option, field)"
-            :value="getOptionValue(option, field)"
+            :key="getOptionValue(option)"
+            :label="getOptionLabel(option)"
+            :value="getOptionValue(option)"
           />
         </el-select>
         
@@ -62,7 +61,6 @@
           :min="field.min"
           :max="field.max"
           :step="field.step || 1"
-          :precision="field.precision"
           v-bind="field.props"
         />
         
@@ -113,39 +111,17 @@
 import { ref, computed } from 'vue'
 import type { FormInstance } from 'element-plus'
 
-interface FormField {
-  prop: string
-  label: string
-  type: 'input' | 'textarea' | 'select' | 'number' | 'switch' | 'date' | 'slot'
-  required?: boolean
-  placeholder?: string
-  inputType?: string
-  step?: number | string
-  rows?: number
-  filterable?: boolean
-  options?: any[]
-  optionLabel?: string
-  optionValue?: string
-  min?: number
-  max?: number
-  precision?: number
-  dateType?: string
-  props?: any
-}
-
-interface Props {
+const props = withDefaults(defineProps<{
   visible: boolean
   title: string
   modelValue: Record<string, any>
-  fields: FormField[]
+  fields: any[]
   rules?: Record<string, any>
   loading?: boolean
   width?: string
   submitText?: string
   cancelText?: string
-}
-
-const props = withDefaults(defineProps<Props>(), {
+}>(), {
   loading: false,
   width: '500px',
   submitText: 'Submit',
@@ -166,14 +142,14 @@ const visible = computed({
   set: (value) => emit('update:visible', value)
 })
 
-function getOptionLabel(option: any, field: FormField) {
+function getOptionLabel(option: any) {
   if (typeof option === 'string' || typeof option === 'number') return option
-  return option[field.optionLabel || 'label'] || option.name || option.title
+  return option.label || option.name || option.title || option
 }
 
-function getOptionValue(option: any, field: FormField) {
+function getOptionValue(option: any) {
   if (typeof option === 'string' || typeof option === 'number') return option
-  return option[field.optionValue || 'value'] || option.id || option.code
+  return option.value || option.id || option.code || option
 }
 
 async function handleSubmit() {

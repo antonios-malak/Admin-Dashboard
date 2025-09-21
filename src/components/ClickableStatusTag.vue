@@ -42,32 +42,23 @@
 import { computed } from 'vue'
 import { ArrowDown } from '@element-plus/icons-vue'
 
-interface StatusOption {
-  value: string
-  label: string
-}
-
-interface Props {
+const props = withDefaults(defineProps<{
   status: string
-  statusOptions: StatusOption[]
+  statusOptions: any[]
   statusMap?: Record<string, string>
   size?: 'large' | 'default' | 'small'
   effect?: 'dark' | 'light' | 'plain'
   loading?: boolean
-}
-
-interface Emits {
-  (e: 'statusChange', newStatus: string): void
-}
-
-const props = withDefaults(defineProps<Props>(), {
+}>(), {
   statusMap: () => ({}),
   size: 'default',
   effect: 'light',
   loading: false
 })
 
-const emit = defineEmits<Emits>()
+const emit = defineEmits<{
+  statusChange: [newStatus: string]
+}>()
 
 const defaultStatusMap: Record<string, string> = {
   // Success states

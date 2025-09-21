@@ -2,7 +2,11 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
 const routes = [
-  { path: '/login', component: () => import('@/pages/login.vue') },
+  { path: '/login', component: () => import('@/pages/Auth/login.vue') },
+  { path: '/forgot', component: () => import('@/pages/Auth/forgot.vue') },
+  { path: '/otp', component: () => import('@/pages/Auth/otp.vue') },
+  { path: '/resetpassword', component: () => import('@/pages/Auth/resetpassword.vue') },
+
   { 
     path: '/', 
     component: () => import('@/components/App/AppLayout.vue'),
@@ -27,7 +31,7 @@ const router = createRouter({
 // ✅ Route Guard
 router.beforeEach((to) => {
   const auth = useAuthStore()
-  const publicRoutes = ['/login', '/register']
+  const publicRoutes = ['/login', '/forgot' , '/otp' , '/resetpassword']
   if (!auth.isLoggedIn && !publicRoutes.includes(to.path)) {
     return '/login'
   }

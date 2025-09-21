@@ -55,15 +55,13 @@ Events:
 import { ref, watch } from 'vue'
 import { Search } from '@element-plus/icons-vue'
 
-interface Props {
+const props = withDefaults(defineProps<{
   modelValue?: string
   placeholder?: string
   size?: 'large' | 'default' | 'small'
   clearable?: boolean
   prefixIcon?: any
-}
-
-const props = withDefaults(defineProps<Props>(), {
+}>(), {
   modelValue: '',
   placeholder: 'Search...',
   size: 'default',

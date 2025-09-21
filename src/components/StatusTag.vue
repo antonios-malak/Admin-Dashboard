@@ -7,14 +7,12 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-interface Props {
+const props = withDefaults(defineProps<{
   status: string
   statusMap?: Record<string, string>
   size?: 'large' | 'default' | 'small'
   effect?: 'dark' | 'light' | 'plain'
-}
-
-const props = withDefaults(defineProps<Props>(), {
+}>(), {
   statusMap: () => ({}),
   size: 'default',
   effect: 'light'

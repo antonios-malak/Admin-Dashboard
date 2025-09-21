@@ -33,18 +33,11 @@ import { computed } from 'vue'
 import { ArrowDown } from '@element-plus/icons-vue'
 import StatusTag from './StatusTag.vue'
 
-interface StatusOption {
-  value: string
-  label: string
-}
-
-interface Props {
+const props = withDefaults(defineProps<{
   modelValue?: string | null
-  options?: StatusOption[]
+  options?: any[]
   placeholder?: string
-}
-
-const props = withDefaults(defineProps<Props>(), {
+}>(), {
   modelValue: null,
   options: () => [],
   placeholder: 'Filter by Status'

@@ -32,6 +32,20 @@ export const useSettingsStore = defineStore('settings', {
         console.error('Create language error:', error)
       }
     },
+
+    async updateLanguage(id: number, language: any) {
+      try {
+        const response = await api.put(`/api/languages/${id}`, language)
+        const index = this.languages.findIndex(l => l.id === id)
+        if (index !== -1) {
+          this.languages[index] = response.data
+        }
+        notify('success', 'Language updated successfully', 'Success')
+      } catch (error: any) {
+        notify('error', 'Failed to update language', 'Error')
+        console.error('Update language error:', error)
+      }
+    },
     
     async deleteLanguage(id: number) {
       try {
@@ -65,6 +79,20 @@ export const useSettingsStore = defineStore('settings', {
       } catch (error: any) {
         notify('error', 'Failed to create currency', 'Error')
         console.error('Create currency error:', error)
+      }
+    },
+
+    async updateCurrency(id: number, currency: any) {
+      try {
+        const response = await api.put(`/api/currencies/${id}`, currency)
+        const index = this.currencies.findIndex(c => c.id === id)
+        if (index !== -1) {
+          this.currencies[index] = response.data
+        }
+        notify('success', 'Currency updated successfully', 'Success')
+      } catch (error: any) {
+        notify('error', 'Failed to update currency', 'Error')
+        console.error('Update currency error:', error)
       }
     },
     

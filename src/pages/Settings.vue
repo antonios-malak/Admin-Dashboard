@@ -18,16 +18,22 @@
           :data="store.languages"
           :columns="languageColumns"
           :loading="store.loading"
-          :show-actions="true"
-          :actions-width="120"
         >
           <template #actions="{ row }">
+            <el-button
+              type="primary"
+              size="small"
+              @click="handleEditLanguage(row)"
+              class="mr-2"
+            >
+              <el-icon><Edit /></el-icon>
+            </el-button>
             <el-button
               type="danger"
               size="small"
               @click="handleDeleteLanguage(row.id)"
             >
-              Delete
+              <el-icon><Delete /></el-icon>
             </el-button>
           </template>
         </DataTable>
@@ -49,16 +55,22 @@
           :data="store.currencies"
           :columns="currencyColumns"
           :loading="store.loading"
-          :show-actions="true"
-          :actions-width="120"
         >
           <template #actions="{ row }">
+            <el-button
+              type="primary"
+              size="small"
+              @click="handleEditCurrency(row)"
+              class="mr-2"
+            >
+              <el-icon><Edit /></el-icon>
+            </el-button>
             <el-button
               type="danger"
               size="small"
               @click="handleDeleteCurrency(row.id)"
             >
-              Delete
+              <el-icon><Delete /></el-icon>
             </el-button>
           </template>
         </DataTable>
@@ -68,7 +80,7 @@
     <!-- Add Language Dialog -->
     <FormDialog
       v-model:visible="showLanguageForm"
-      v-model="languageForm"
+      v-model:model-value="languageForm"
       title="Add Language"
       width="400px"
       :fields="languageFields"
@@ -81,12 +93,38 @@
     <!-- Add Currency Dialog -->
     <FormDialog
       v-model:visible="showCurrencyForm"
-      v-model="currencyForm"
+      v-model:model-value="currencyForm"
       title="Add Currency"
       width="400px"
       :fields="currencyFields"
       :rules="currencyRules"
       submit-text="Create"
+      :loading="submitting"
+      @submit="handleCurrencySubmit"
+    />
+
+    <!-- Edit Language Dialog -->
+    <FormDialog
+      v-model:visible="showEditLanguageForm"
+      v-model:model-value="languageForm"
+      title="Edit Language"
+      width="400px"
+      :fields="languageFields"
+      :rules="languageRules"
+      submit-text="Update"
+      :loading="submitting"
+      @submit="handleLanguageSubmit"
+    />
+
+    <!-- Edit Currency Dialog -->
+    <FormDialog
+      v-model:visible="showEditCurrencyForm"
+      v-model:model-value="currencyForm"
+      title="Edit Currency"
+      width="400px"
+      :fields="currencyFields"
+      :rules="currencyRules"
+      submit-text="Update"
       :loading="submitting"
       @submit="handleCurrencySubmit"
     />
@@ -96,6 +134,7 @@
 <script setup lang="ts">
   import { ref, reactive, onMounted, watch } from "vue";
   import { useSettingsStore } from "@/stores/settings";
+  import { Delete, Edit } from '@element-plus/icons-vue';
   import { ElMessageBox } from "element-plus";
   import DataTable from "@/components/DataTable.vue";
   import FormDialog from "@/components/FormDialog.vue";
@@ -105,7 +144,11 @@
   const activeTab = ref("languages");
   const showLanguageForm = ref(false);
   const showCurrencyForm = ref(false);
+  const showEditLanguageForm = ref(false);
+  const showEditCurrencyForm = ref(false);
   const submitting = ref(false);
+  const editingLanguage = ref<any>(null);
+  const editingCurrency = ref<any>(null);
 
   // Table columns
   const languageColumns = [
@@ -126,14 +169,14 @@
     {
       prop: "code",
       label: "Code",
-      type: "input" as const,
+      type: "input",
       placeholder: "e.g. en, ar, fr",
       required: true,
     },
     {
       prop: "name",
       label: "Name",
-      type: "input" as const,
+      type: "input",
       placeholder: "e.g. English, Arabic, French",
       required: true,
     },
@@ -143,21 +186,21 @@
     {
       prop: "code",
       label: "Code",
-      type: "input" as const,
+      type: "input",
       placeholder: "e.g. USD, EUR, SAR",
       required: true,
     },
     {
       prop: "symbol",
       label: "Symbol",
-      type: "input" as const,
+      type: "input",
       placeholder: "e.g. $, €, ﷼",
       required: true,
     },
     {
       prop: "name",
       label: "Name",
-      type: "input" as const,
+      type: "input",
       placeholder: "e.g. US Dollar, Euro, Saudi Riyal",
       required: true,
     },
@@ -234,40 +277,81 @@
     try {
       submitting.value = true;
 
-      await store.createLanguage({
-        code: languageForm.code,
-        name: languageForm.name,
-      });
+      if (editingLanguage.value) {
+        // Update existing language
+        await store.updateLanguage(editingLanguage.value.id, {
+          code: languageForm.code,
+          name: languageForm.name,
+        });
+        showEditLanguageForm.value = false;
+      } else {
+        // Create new language
+        await store.createLanguage({
+          code: languageForm.code,
+          name: languageForm.name,
+        });
+        showLanguageForm.value = false;
+      }
 
-      showLanguageForm.value = false;
       resetLanguageForm();
     } catch (error) {
-      console.error("Failed to create language:", error);
+      console.error("Failed to submit language:", error);
     } finally {
       submitting.value = false;
     }
+  }
+
+  function handleEditLanguage(language: any) {
+    editingLanguage.value = language;
+    Object.assign(languageForm, {
+      code: language.code,
+      name: language.name,
+    });
+    showEditLanguageForm.value = true;
   }
 
   async function handleCurrencySubmit() {
     try {
       submitting.value = true;
 
-      await store.createCurrency({
-        code: currencyForm.code,
-        symbol: currencyForm.symbol,
-        name: currencyForm.name,
-      });
+      if (editingCurrency.value) {
+        // Update existing currency
+        await store.updateCurrency(editingCurrency.value.id, {
+          code: currencyForm.code,
+          symbol: currencyForm.symbol,
+          name: currencyForm.name,
+        });
+        showEditCurrencyForm.value = false;
+      } else {
+        // Create new currency
+        await store.createCurrency({
+          code: currencyForm.code,
+          symbol: currencyForm.symbol,
+          name: currencyForm.name,
+        });
+        showCurrencyForm.value = false;
+      }
 
-      showCurrencyForm.value = false;
       resetCurrencyForm();
     } catch (error) {
-      console.error("Failed to create currency:", error);
+      console.error("Failed to submit currency:", error);
     } finally {
       submitting.value = false;
     }
   }
 
+  function handleEditCurrency(currency: any) {
+    editingCurrency.value = currency;
+    Object.assign(currencyForm, {
+      code: currency.code,
+      symbol: currency.symbol,
+      name: currency.name,
+    });
+    showEditCurrencyForm.value = true;
+  }
+
   function resetLanguageForm() {
+    editingLanguage.value = null;
     Object.assign(languageForm, {
       code: "",
       name: "",
@@ -275,6 +359,7 @@
   }
 
   function resetCurrencyForm() {
+    editingCurrency.value = null;
     Object.assign(currencyForm, {
       code: "",
       symbol: "",

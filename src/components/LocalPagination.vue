@@ -1,30 +1,3 @@
-<!--
-LocalPagination - A reusable pagination component for local data
-
-Usage Example:
-<LocalPagination
-  :data="items"
-  :page-size="6"
-  v-slot="{ paginatedData, currentPage, totalPages }"
->
-  <DataTable :data="paginatedData" :columns="columns" />
-</LocalPagination>
-
-Props:
-- data: Array of items to paginate
-- pageSize: Number of items per page (default: 6)
-- currentPage: Current page number (v-model support)
-
-Events:
-- update:currentPage: Emitted when page changes
-
-Slot Props:
-- paginatedData: Current page's data
-- currentPage: Current page number
-- totalPages: Total number of pages
-- totalItems: Total number of items
--->
-
 <template>
   <div class="local-pagination">
     <!-- Slot for content -->
@@ -54,13 +27,11 @@ Slot Props:
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 
-interface Props {
+const props = withDefaults(defineProps<{
   data: any[]
   pageSize?: number
   currentPage?: number
-}
-
-const props = withDefaults(defineProps<Props>(), {
+}>(), {
   pageSize: 6,
   currentPage: 1
 })

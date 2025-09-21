@@ -1,0 +1,48 @@
+{
+  "resetpassword": {
+    "title": "Update Password",
+    "password": "New Password",
+    "confirmPassword": "Confirm New Password",
+    "button": "Update Password",
+    "validation": {
+      "password_required": "Please enter your new password",
+      "password_min": "Password must be at least 8 characters",
+        "password_max": "Password must be at most 25 characters",
+        "password_pattern": "Password must contain at least one uppercase letter, one lowercase letter, and one number",
+      "confirm_required": "Please confirm your new password",
+      "confirm_match": "Passwords do not match"
+    }
+  },
+  "otp": {
+    "title": "OTP Verification",
+    "label": "Enter OTP sent to your email :",
+    "button": "Reset Password"
+  },
+  "forgot": {
+    "title": "Forgot Password",
+    "email": "Email",
+    "button": "Send Code",
+    "validation": {
+      "email_required": "Email is required",
+      "email_max": "Email must be at most 100 characters",
+      "email_invalid": "Invalid email format"
+    }
+  }
+  ,
+  "login": {
+    "title": "Welcome back",
+    "email": "Email",
+    "password": "Password",
+    "button": "Login now",
+  "forgot": "Forgot password?",
+      "validation": {
+        "email_required": "Email is required",
+        "email_max": "Email must be at most 100 characters",
+        "email_invalid": "Invalid email format",
+        "password_required": "Password is required",
+        "password_min": "Password must be at least 8 characters",
+        "password_max": "Password must be at most 25 characters",
+        "password_pattern": "Password must contain at least one uppercase letter, one lowercase letter, and one number"
+      }
+  }
+}
