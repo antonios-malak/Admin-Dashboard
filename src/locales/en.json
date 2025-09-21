@@ -14,9 +14,11 @@
     }
   },
   "otp": {
-    "title": "OTP Verification",
-    "label": "Enter OTP sent to your email :",
-    "button": "Reset Password"
+  "title": "OTP Verification",
+  "label": "Enter OTP sent to your email :",
+  "button": "Reset Password",
+  "notReceived": "Haven't received OTP?",
+  "resend": "Resend"
   },
   "forgot": {
     "title": "Forgot Password",
