@@ -11,11 +11,11 @@ export const useAuthStore = defineStore("auth", {
   }),
   getters: { isLoggedIn: (s) => !!s.token },
   actions: {
-    async login(username: string, password: string) {
+    async login(email: string, password: string) {
       try {
         this.loading = true;
         const response = await api.post("/auth/login", {
-          username, // تغيير من email إلى user
+          email, 
           password,
         });
 

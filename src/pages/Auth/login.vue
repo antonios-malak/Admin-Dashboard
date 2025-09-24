@@ -61,7 +61,7 @@
             :loading="auth.loading"
             :disabled="!valid"
           >{{ $t('login.button') }}</el-button>
-          >
+          
         </el-form-item>
 
         <div class="text-center">
