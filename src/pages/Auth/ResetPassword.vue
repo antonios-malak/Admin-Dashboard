@@ -19,64 +19,21 @@
         >
             <el-form-item prop="password">
               <el-input
-                v-if="!showPassword"
                 class="mb-2"
                 v-model="formData.password"
                 :placeholder="$t('resetpassword.password')"
                 type="password"
-                ref="passwordInputRef"
-              >
-                <template #suffix>
-                  <span @click="showPassword = true" style="cursor: pointer">
-                    <el-icon><View /></el-icon>
-                  </span>
-                </template>
-              </el-input>
-              <el-input
-                v-else
-                class="mb-2"
-                v-model="formData.password"
-                :placeholder="$t('resetpassword.password')"
-                type="text"
-                ref="passwordInputRef"
-              >
-                <template #suffix>
-                  <span @click="showPassword = false" style="cursor: pointer">
-                    <el-icon><Hide /></el-icon>
-                  </span>
-                </template>
-              </el-input>
+                show-password
+              />
             </el-form-item>
             <el-form-item prop="confirmPassword">
-             
-                <el-input
-                v-if="!showPassword"
+              <el-input
                 class="my-2"
                 v-model="formData.confirmPassword"
                 :placeholder="$t('resetpassword.confirmPassword')"
                 type="password"
-                ref="confirmPasswordInputRef"
-              >
-                <template #suffix>
-                  <span @click="showPassword = true" style="cursor: pointer">
-                    <el-icon><View /></el-icon>
-                  </span>
-                </template>
-              </el-input>
-              <el-input
-                v-else
-                class="my-2"
-                v-model="formData.confirmPassword"
-                :placeholder="$t('resetpassword.confirmPassword')"
-                type="text"
-                ref="confirmPasswordInputRef"
-              >
-                <template #suffix>
-                  <span @click="showPassword = false" style="cursor: pointer">
-                    <el-icon><Hide /></el-icon>
-                  </span>
-                </template>
-              </el-input>
+                show-password
+              />
             </el-form-item>
             <el-form-item>
               <el-button
@@ -97,14 +54,12 @@
   import { useAuthStore } from "@/stores/auth";
   import router from "@/router";
   import { useRoute } from 'vue-router';
-  import { View, Hide } from "@element-plus/icons-vue";
+  
   const route = useRoute();
   const email = route.query.email;
 
   const formRef = ref();
   const auth = useAuthStore();
-  const showPassword = ref(false);
-  const passwordInputRef = ref();
 
   const formData = reactive({
     email: email || "",

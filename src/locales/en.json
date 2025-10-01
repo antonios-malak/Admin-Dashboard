@@ -46,5 +46,326 @@
         "password_max": "Password must be at most 25 characters",
         "password_pattern": "Password must contain at least one uppercase letter, one lowercase letter, and one number"
       }
+  },
+  "appHeader": {
+    "languages": {
+      "english": "English",
+      "arabic": "العربية"
+    },
+    "userMenu": {
+      "myAccount": "My Account",
+      "logout": "Logout"
+    }
+  },
+  "appSidebar": {
+    "navigation": {
+      "dashboard": "Dashboard",
+      "products": "Products",
+      "categories": "Categories",
+      "customers": "Customers",
+      "orders": "Orders",
+      "reports": "Reports",
+      "settings": "Settings",
+      "myAccount": "My Account",
+      "users": "Users",
+      "roles": "Roles",
+      "permissions": "Permissions"
+    }
+  },
+  "dashboard": {
+    "overview": {
+      "title": "Dashboard Overview",
+      "welcome": "Welcome to your dashboard 🚀"
+    },
+    "statistics": {
+      "title": "Statistics"
+    }
+  },
+  "myAccount": {
+    "title": "My Account",
+    "profileInformation": {
+      "title": "Profile Information",
+      "fullName": "Full Name",
+      "emailAddress": "Email Address",
+      "role": "Role",
+      "memberSince": "Member Since"
+    },
+    "securitySettings": {
+      "title": "Security Settings",
+      "changePassword": {
+        "title": "Change Password",
+        "description": "Update your password to keep your account secure and protect your personal information.",
+        "button": "Change Password",
+        "dialogTitle": "Change Password",
+        "dialogDescription": "Please enter your current password and choose a new secure password.",
+        "currentPassword": "Current Password",
+        "newPassword": "New Password",
+        "confirmPassword": "Confirm Password",
+        "currentPasswordPlaceholder": "Enter your current password",
+        "newPasswordPlaceholder": "Enter your new password",
+        "confirmPasswordPlaceholder": "Confirm your new password",
+        "cancel": "Cancel",
+        "updatePassword": "Update Password"
+      },
+      "accountStatus": {
+        "title": "Account Status",
+        "active": "Active",
+        "description": "Your account is active and secure"
+      },
+      "validation": {
+        "currentPasswordRequired": "Please enter current password",
+        "newPasswordRequired": "Please enter new password",
+        "newPasswordMin": "Password must be at least 8 characters",
+        "newPasswordPattern": "Password must contain at least one uppercase letter, one lowercase letter, and one number",
+        "confirmPasswordRequired": "Please confirm new password",
+        "passwordsDoNotMatch": "Passwords do not match"
+      }
+    }
+  },
+  "users": {
+    "title": "Users",
+    "subtitle": "Manage system users and their permissions",
+    "addButton": "Add User",
+    "searchPlaceholder": "Search users by name, email, phone, or role...",
+    "filterPlaceholder": "Filter by status",
+    "clearFilters": "Clear Filters",
+    "table": {
+      "avatar": "Avatar",
+      "name": "Name",
+      "email": "Email",
+      "phone": "Phone",
+      "role": "Role",
+      "status": "Status",
+      "createdAt": "Created",
+      "actions": "Actions",
+      "emptyMessage": "No users found"
+    },
+    "form": {
+      "addTitle": "Add New User",
+      "editTitle": "Edit User",
+      "userImage": "User Image",
+      "fullName": "Full Name",
+      "email": "Email",
+      "phone": "Phone",
+      "password": "Password",
+      "confirmPassword": "Confirm Password",
+      "role": "Role",
+      "status": "Status",
+      "placeholders": {
+        "fullName": "Enter full name",
+        "email": "Enter email address",
+        "phone": "Enter phone number",
+        "password": "Enter password",
+        "confirmPassword": "Confirm password",
+        "role": "Select role",
+        "status": "Select status",
+        "country": "Country"
+      },
+      "buttons": {
+        "cancel": "Cancel",
+        "submit": "Save",
+        "edit": "Edit",
+        "delete": "Delete"
+      }
+    },
+   
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "roles": {
+      "admin": "Admin",
+      "user": "User"
+    },
+    "validation": {
+      "name": {
+        "required": "Please enter full name",
+        "minLength": "Name is too short (minimum 2 characters)",
+        "maxLength": "Name is too long (maximum 100 characters)",
+        "invalid": "Name must contain only letters and numbers"
+      },
+      "email": {
+        "required": "Email field is empty, please enter email",
+        "maxLength": "Email is too long (maximum 100 characters)",
+        "invalid": "Invalid email format",
+        "duplicate": "Email already exists in the system"
+      },
+      "phone": {
+        "required": "Phone field is empty, please enter phone number",
+        "invalid": "Invalid phone number",
+        "duplicate": "Phone number already exists in the system"
+      },
+      "password": {
+        "required": "Password field is empty, please enter password",
+        "minLength": "Password is too short (minimum 8 characters)",
+        "maxLength": "Password is too long (maximum 25 characters)",
+        "pattern": "Password must contain uppercase letter, lowercase letter, number and no spaces"
+      },
+      "confirmPassword": {
+        "required": "Password field is empty, please enter password",
+        "mismatch": "Passwords do not match"
+      },
+      "role": {
+        "required": "Field is empty, please select role"
+      },
+      "status": {
+        "required": "Field is empty, please select status"
+      }
+    },
+    "messages": {
+      "avatarUpload": {
+        "fileTypeError": "Please upload image file only (PNG, JPEG)",
+        "fileSizeError": "File size must be less than 1MB",
+        "fileTypeInfo": "PNG, JPEG up to 1MB"
+      },
+      "deleteConfirm": {
+        "title": "Confirm Delete",
+        "message": "Are you sure you want to delete user \"{name}\"? This action cannot be undone.",
+        "confirmButton": "Delete",
+        "cancelButton": "Cancel"
+      },
+      "success": {
+        "userAdded": "User added successfully",
+        "userUpdated": "User updated successfully",
+        "userDeleted": "User deleted successfully",
+        "statusChanged": "User status changed successfully"
+      },
+      "error": {
+        "fetchUsers": "Failed to fetch users",
+        "addUser": "Failed to add user",
+        "updateUser": "Failed to update user",
+        "deleteUser": "Failed to delete user",
+        "toggleStatus": "Failed to toggle user status"
+      }
+    }
+  },
+  "roles": {
+    "title": "Roles",
+    "subtitle": "Manage system roles and permissions",
+    "addButton": "Add Role",
+    "searchPlaceholder": "Search roles by name...",
+    "filterPlaceholder": "Filter by status",
+    "showAll": "Show All",
+    "table": {
+      "roleName": "Role Name",
+      "status": "Status",
+      "createdAt": "Created At",
+      "actions": "Actions",
+      "emptyMessage": "No roles found"
+    },
+    "form": {
+      "addTitle": "Add New Role",
+      "editTitle": "Edit Role",
+      "viewTitle": "View Role Details",
+      "roleName": "Role Name",
+      "permissions": "Granted Permissions",
+      "status": "Status",
+      "placeholders": {
+        "roleName": "Enter role name",
+        "permissions": "Select granted permissions",
+        "status": "Select status"
+      },
+      "buttons": {
+        "cancel": "Cancel",
+        "submit": "Save",
+        "close": "Close"
+      }
+    },
+    "permissions": {
+      "dashboard": "Dashboard Access",
+      "users": "User Management",
+      "roles": "Role Management",
+      "products": "Product Management",
+      "categories": "Category Management",
+      "orders": "Order Management",
+      "reports": "Report Access",
+      "settings": "Settings Access",
+      "notifications": "Notification Management"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "validation": {
+      "name": {
+        "required": "Please enter role name",
+        "minLength": "Role name is too short (minimum 2 characters)",
+        "maxLength": "Role name is too long (maximum 100 characters)",
+        "invalid": "Role name must contain only letters",
+        "duplicate": "Role name already exists in the system"
+      },
+      "permissions": {
+        "required": "Please select granted permissions"
+      }
+    },
+    "messages": {
+      "rolesFetched": "Roles fetched successfully",
+      "roleAdded": "Role added successfully",
+      "roleUpdated": "Role updated successfully",
+      "roleDeleted": "Role deleted successfully",
+      "statusChanged": "Role status changed successfully",
+      "deleteConfirm": {
+        "title": "Confirm Delete",
+        "message": "Are you sure you want to delete role \"{name}\"? This action cannot be undone.",
+        "confirmButton": "Delete",
+        "cancelButton": "Cancel"
+      },
+      "disableRole": {
+        "title": "Confirm Disable",
+        "confirm": "Do you want to complete the disable operation?",
+        "confirmButton": "Disable",
+        "cancelButton": "Cancel"
+      },
+      "enableRole": {
+        "title": "Confirm Enable",
+        "confirm": "Are you sure you want to enable the role?",
+        "confirmButton": "Enable",
+        "cancelButton": "Cancel"
+      },
+      "disableSystemRole": {
+        "title": "Confirm Disable",
+        "confirm": "Role is linked to system admin, do you want to complete the disable operation?",
+        "confirmButton": "Disable",
+        "cancelButton": "Cancel"
+      },
+      "error": {
+        "fetchRoles": "Failed to fetch roles",
+        "addRole": "Failed to add role",
+        "updateRole": "Failed to update role",
+        "deleteRole": "Failed to delete role",
+        "toggleStatus": "Failed to toggle role status"
+      }
+    }
+  },
+  "permissions": {
+    "title": "Permissions",
+    "subtitle": "View and manage system permissions",
+    "refreshButton": "Refresh",
+    "loading": "Loading permissions...",
+    "retryButton": "Retry",
+    "noDescription": "No description available",
+    "table": {
+      "emptyMessage": "No permissions found",
+      "columns": {
+        "id": "ID",
+        "name": "Permission Name",
+        "createdAt": "Created At"
+      }
+    },
+    "categories": {
+      "user-management": "User Management",
+      "content-management": "Content Management",
+      "system-settings": "System Settings",
+      "reports": "Reports",
+      "other": "Other"
+    },
+    "messages": {
+      "success": {
+        "refreshed": "Permissions refreshed successfully"
+      },
+      "error": {
+        "fetchPermissions": "Failed to fetch permissions"
+      }
+    }
   }
 }

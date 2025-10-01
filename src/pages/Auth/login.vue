@@ -3,55 +3,29 @@
     <el-card class="w-96">
       <template #header>
         <div class="flex justify-end">
-          <el-select v-model="$i18n.locale" style="width: 100px;" size="small">
+          <el-select v-model="$i18n.locale" style="width: 100px" size="small">
             <el-option label="English" value="en" />
             <el-option label="العربية" value="ar" />
           </el-select>
         </div>
       </template>
-  <h2 class="mb-4 text-center font-bold">{{ $t('login.title') }}</h2>
+      <h2 class="mb-4 text-center font-bold">{{ $t("login.title") }}</h2>
       <el-form
         ref="formRef"
         :model="formData"
         :rules="validationRules"
         @submit.prevent="submit"
       >
-        <el-form-item prop="Email">
+        <el-form-item prop="Email" class="pb-4">
           <el-input v-model="formData.Email" :placeholder="$t('login.email')" />
         </el-form-item>
-        <el-form-item prop="password">
+        <el-form-item prop="password" class="pb-4">
           <el-input
-            v-if="!showPassword"
             v-model="formData.password"
             :placeholder="$t('login.password')"
             type="password"
-            ref="passwordInputRef"
-          >
-            <template #suffix>
-              <span
-                @click="showPassword = true"
-                style="cursor: pointer"
-              >
-                <el-icon><View /></el-icon>
-              </span>
-            </template>
-          </el-input>
-          <el-input
-            v-else
-            v-model="formData.password"
-            :placeholder="$t('login.password')"
-            type="text"
-            ref="passwordInputRef"
-          >
-            <template #suffix>
-              <span
-                @click="showPassword = false"
-                style="cursor: pointer"
-              >
-                <el-icon><Hide /></el-icon>
-              </span>
-            </template>
-          </el-input>
+            show-password
+          />
         </el-form-item>
         <el-form-item>
           <el-button
@@ -60,13 +34,17 @@
             class="w-full"
             :loading="auth.loading"
             :disabled="!valid"
-          >{{ $t('login.button') }}</el-button>
-          
+            >{{ $t("login.button") }}</el-button
+          >
         </el-form-item>
 
         <div class="text-center">
-          <router-link to="/forgot" class="text-blue-500 hover:underline">
-            {{ $t('login.forgot') }}
+          <router-link
+            to="/forgot"
+            style="color: var(--primary)"
+            class="hover:underline"
+          >
+            {{ $t("login.forgot") }}
           </router-link>
         </div>
       </el-form>
@@ -78,57 +56,58 @@
   import { ref, reactive, computed } from "vue";
   import type { FormInstance, FormRules } from "element-plus";
   import { useAuthStore } from "@/stores/auth";
-  import { View, Hide } from "@element-plus/icons-vue";
+  import { useI18n } from "vue-i18n";
 
   const formRef = ref<FormInstance>();
   const auth = useAuthStore();
-  const showPassword = ref(false);
-  // Ref for password input element
-  const passwordInputRef = ref();
-
-  // Function to toggle password visibility and restore cursor
-
+  const { t } = useI18n();
 
   const formData = reactive({
     Email: "",
     password: "",
   });
 
-  const validationRules = computed<FormRules>( () => ({
+  const validationRules = computed<FormRules>(() => ({
     Email: [
-      { required: true, message: "Email is required", trigger: "blur" },
+      {
+        required: true,
+        message: t("login.validation.email_required"),
+        trigger: "blur",
+      },
       {
         max: 100,
-        message: "Email must be at most 100 characters",
+        message: t("login.validation.email_max"),
         trigger: "blur",
       },
       {
         pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-        message: "Invalid email format",
+        message: t("login.validation.email_invalid"),
         trigger: "blur",
       },
     ],
     password: [
-      { required: true, message: "Password is required", trigger: "blur" },
+      {
+        required: true,
+        message: t("login.validation.password_required"),
+        trigger: "blur",
+      },
       {
         min: 8,
-        message: "Password must be at least 8 characters",
+        message: t("login.validation.password_min"),
         trigger: "blur",
       },
       {
         max: 25,
-        message: "Password must be at most 25 characters",
+        message: t("login.validation.password_max"),
         trigger: "blur",
       },
       {
         pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/,
-        message:
-          "Password must contain at least one uppercase letter, one lowercase letter, and one number",
+        message: t("login.validation.password_pattern"),
         trigger: "blur",
       },
     ],
-  })
-)
+  }));
 
   const valid = computed(() => {
     return (

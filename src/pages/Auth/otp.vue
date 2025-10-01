@@ -33,23 +33,25 @@
             />
           </div>
         </el-form-item>
-        <el-button
-          type="primary"
-          @click="submit"
-          class="w-full"
-          :loading="auth.loading"
-          >{{ $t("otp.button") }}</el-button
-        >
+        <div class="flex justify-center">
+          <el-button
+            type="primary"
+            @click="submit"
+            class="w-1/2"
+            :loading="auth.loading"
+            >{{ $t("otp.button") }}</el-button
+          >
+        </div>
       </el-form>
-      <p class="mt-2">
+      <p class="mt-5">
         {{ $t('otp.notReceived') }}
         <span
-          :class="['ml-1', resendDisabled ? 'text-gray-400' : 'text-[#409eff] cursor-pointer']"
+          :style="['ml-1', resendDisabled ? 'color: #9ca3af' : 'color: var(--primary); cursor: pointer']"
           @click="!resendDisabled && resendOtp()"
         >
           {{ $t('otp.resend') }}
         </span>
-        <span v-if="resendDisabled" class="ml-2 text-sm text-gray-500">({{ timer }}s)</span>
+        <span v-if="resendDisabled" class="ml-2 text-sm" style="color: var(--text-secondary)">({{ timer }}s)</span>
       </p>
     </el-card>
   </div>

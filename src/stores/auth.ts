@@ -84,6 +84,19 @@ export const useAuthStore = defineStore("auth", {
         this.loading = false;
         router.push("/login");
       }
+    },
+    async changePassword(formData: object) {
+      try {
+        this.loading = true;
+        console.log(formData);
+        await api.post("/auth/reset-password", formData);
+        notify("success", "Password changed successfully", "Success");
+      } catch (error: any) {
+        notify("error", error?.response?.data?.message, "Error");
+        throw error; // Re-throw to handle in component
+      } finally {
+        this.loading = false;
+      }
     }
   },
 });

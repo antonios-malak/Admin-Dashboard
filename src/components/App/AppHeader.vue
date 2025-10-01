@@ -1,5 +1,5 @@
 <template>
-  <div class="flex justify-between items-center">
+  <div class="app-header flex justify-between items-center">
     <div class="flex items-center gap-3">
       <!-- Hamburger Menu Button (only visible on mobile) -->
       <el-button 
@@ -14,36 +14,61 @@
         </el-icon>
       </el-button>
       
-      <span class="font-semibold">Welcome Admin!</span>
     </div>
     
-    <!-- <el-avatar>
-      <svg class="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="7" r="4" />
-        <path d="M5.5 21a8.38 8.38 0 0 1 13 0" />
-      </svg>
-    </el-avatar> -->
     <div class="flex justify-center gap-3">
-       <div class="flex justify-end ">
-          <el-select v-model="$i18n.locale" style="width: 100px;" size="small">
-            <el-option label="English" value="en" />
-            <el-option label="العربية" value="ar" />
-          </el-select>
-        </div>
-        <div class="flex justify-end ">
-          <el-select v-model="$i18n.locale" style="width: 100px;" size="small">
-            <el-option label="English" value="en" />
-            <el-option label="العربية" value="ar" />
-          </el-select>
-        </div>
+      <!-- Language Selector -->
+      <div class="flex justify-end">
+        <el-select v-model="$i18n.locale" style="width: 100px;" size="small">
+          <el-option :label="$t('appHeader.languages.english')" value="en" />
+          <el-option :label="$t('appHeader.languages.arabic')" value="ar" />
+        </el-select>
+      </div>
+      
+      <!-- Notifications Component -->
+      <Notifications />
 
+      <!-- User Dropdown Menu -->
+      <el-dropdown @command="handleCommand" trigger="click">
+        <el-button type="text" class="flex items-center gap-2">
+          <el-avatar :size="32" style="background-color: rgba(59, 130, 246, 0.1)">
+            <el-icon size="18" >
+              <User />
+            </el-icon>
+          </el-avatar>
+          <el-icon style="color: var(--text-secondary)">
+            <ArrowDown />
+          </el-icon>
+        </el-button>
+        
+        <template #dropdown>
+          <el-dropdown-menu>
+            <el-dropdown-item command="account" class="flex items-center gap-2">
+              <el-icon><User /></el-icon>
+              {{ $t('appHeader.userMenu.myAccount') }}
+            </el-dropdown-item>
+            <el-dropdown-item 
+              command="logout" 
+              class="flex items-center gap-2" 
+              style="color: #dc2626;"
+            >
+              <el-icon><SwitchButton /></el-icon>
+              {{ $t('appHeader.userMenu.logout') }}
+            </el-dropdown-item>
+          </el-dropdown-menu>
+        </template>
+      </el-dropdown>
+      
     </div>
     
   </div>
 </template>
 
 <script setup lang="ts">
-import { Menu } from '@element-plus/icons-vue'
+import { Menu, User, ArrowDown, SwitchButton } from '@element-plus/icons-vue'
+import { useAuthStore } from '@/stores/auth'
+import { useRouter } from 'vue-router'
+import Notifications from '@/components/Notifications.vue'
 
 interface Props {
   showMenuButton?: boolean
@@ -56,4 +81,42 @@ withDefaults(defineProps<Props>(), {
 defineEmits<{
   toggleSidebar: []
 }>()
+
+const authStore = useAuthStore()
+const router = useRouter()
+
+// Handle dropdown menu commands
+function handleCommand(command: string) {
+  switch (command) {
+    case 'account':
+      router.push('/my-account')
+      break
+    case 'logout':
+      authStore.logout()
+      break
+  }
+}
 </script>
+
+<style scoped>
+.app-header {
+  padding: 1rem 1.5rem;
+  background: #ffffff;
+  border-bottom: 2px solid var(--primary);
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.15);
+  position: relative;
+  z-index: 10;
+}
+
+.app-header::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--primary), transparent);
+  opacity: 0.3;
+}
+</style>
+

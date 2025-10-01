@@ -1,7 +1,11 @@
 <template>
   <el-dialog 
     v-model="visible" 
-    :title="title" 
+    :title="''"
+    >
+    <template #title>
+      <div class="text-lg font-semibold pt-3 pb-5 text-[var(--primary)] text-center ">{{ title }}</div>
+    </template
     :width="width"
     @close="handleClose"
   >
@@ -10,7 +14,8 @@
       :rules="rules" 
       ref="formRef"
       @submit.prevent="handleSubmit"
-      label-width="120px"
+      :label-style="{ minWidth: '100px', maxWidth: '150px' }"
+      
     >
       <el-form-item 
         v-for="field in fields" 
@@ -108,7 +113,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import type { FormInstance } from 'element-plus'
 
 const props = withDefaults(defineProps<{
@@ -142,6 +147,14 @@ const visible = computed({
   set: (value) => emit('update:visible', value)
 })
 
+// Watch for dialog opening and clear validation
+watch(() => props.visible, (newValue) => {
+  if (newValue && formRef.value) {
+    // Clear validation when dialog opens
+    formRef.value.clearValidate()
+  }
+})
+
 function getOptionLabel(option: any) {
   if (typeof option === 'string' || typeof option === 'number') return option
   return option.label || option.name || option.title || option
@@ -164,6 +177,10 @@ async function handleSubmit() {
 }
 
 function handleClose() {
+  // Clear validation errors when closing the dialog
+  if (formRef.value) {
+    formRef.value.clearValidate()
+  }
   emit('close')
   emit('update:visible', false)
 }

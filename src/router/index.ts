@@ -3,22 +3,20 @@ import { useAuthStore } from '@/stores/auth'
 
 const routes = [
   { path: '/login', component: () => import('@/pages/Auth/login.vue') },
-  { path: '/forgot', component: () => import('@/pages/Auth/forgot.vue') },
+  { path: '/forgot', component: () => import('@/pages/Auth/Forgot.vue') },
   { path: '/otp', component: () => import('@/pages/Auth/otp.vue') },
-  { path: '/resetpassword', component: () => import('@/pages/Auth/resetpassword.vue') },
+  { path: '/resetpassword', component: () => import('@/pages/Auth/ResetPassword.vue') },
 
   { 
     path: '/', 
     component: () => import('@/components/App/AppLayout.vue'),
     children: [
-      { path: '/', component: () => import('@/pages/Dasboard.vue') },
-      { path: 'products', component: () => import('@/pages/Products.vue') },
-      { path: 'categories', component: () => import('@/pages/Categories.vue') },
-      { path: 'customers', component: () => import('@/pages/Customers.vue') },
-      { path: 'orders', component: () => import('@/pages/Orders.vue') },
-      { path: 'reports', component: () => import('@/pages/Reports.vue') },
-      { path: 'settings', component: () => import('@/pages/Settings.vue') },
-      // { path: 'entries', component: () => import('@/pages/entries.vue') }
+      { path: '/', component: () => import('@/pages/Dashboard.vue') },
+      { path: 'my-account', component: () => import('@/pages/MyAccount.vue') },
+      { path: 'notifications', component: () => import('@/pages/Notifications.vue') },
+        { path: 'users', component: () => import('@/pages/Users.vue') },
+        { path: 'roles', component: () => import('@/pages/Roles.vue') },
+        { path: 'permissions', component: () => import('@/pages/Permissions.vue') },
     ]
   }
 ]

@@ -15,9 +15,10 @@
           @click="$emit('add')"
           :loading="addButtonLoading"
         >
-          {{ addButtonText }}
+          <span v-if="addButtonText" class="me-2">  {{ addButtonText }} </span>
           <el-icon v-if="addButtonIcon" :size="12">
             <component :is="addButtonIcon" />
+            
           </el-icon>
         </el-button>
       </slot>
