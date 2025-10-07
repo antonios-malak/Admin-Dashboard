@@ -1,8 +1,8 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { useI18n } from 'vue-i18n'
 import api from '@/utils/api'
 import { notify } from '@/utils/notify'
+import i18n from '@/i18n'
 
 // User interface
 export interface User {
@@ -29,9 +29,10 @@ export interface UserFormData {
   permissions?: string[]
 }
 
+// Helper function to get translations
+const t = (key: string) => i18n.global.t(key)
+
 export const useUserStore = defineStore('user', () => {
-  const { t } = useI18n()
-  
   // State
   const users = ref<User[]>([])
   const loading = ref(false)

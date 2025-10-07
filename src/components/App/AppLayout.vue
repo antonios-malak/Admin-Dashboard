@@ -36,6 +36,7 @@
       <el-main><router-view /></el-main>
     </el-container>
   </el-container>
+  
 </template>
 
 <script setup lang="ts">

@@ -60,13 +60,8 @@
   "appSidebar": {
     "navigation": {
       "dashboard": "Dashboard",
-      "products": "Products",
-      "categories": "Categories",
-      "customers": "Customers",
-      "orders": "Orders",
-      "reports": "Reports",
-      "settings": "Settings",
       "myAccount": "My Account",
+      "notifications": "Notifications",
       "users": "Users",
       "roles": "Roles",
       "permissions": "Permissions"

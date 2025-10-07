@@ -60,13 +60,8 @@
   "appSidebar": {
     "navigation": {
       "dashboard": "لوحة التحكم",
-      "products": "المنتجات",
-      "categories": "الفئات",
-      "customers": "العملاء",
-      "orders": "الطلبات",
-      "reports": "التقارير",
-      "settings": "الإعدادات",
       "myAccount": "حسابي",
+      "notifications": "الإشعارات",
       "users": "المستخدمين",
       "roles": "الادوار",
       "permissions": "الصلاحيات"

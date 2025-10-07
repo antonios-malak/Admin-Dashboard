@@ -1,8 +1,8 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { useI18n } from 'vue-i18n'
 import api from '@/utils/api'
 import { notify } from '@/utils/notify'
+import i18n from '@/i18n'
 import { usePermissions } from '@/composables/usePermissions'
 
 // Role interface
@@ -23,8 +23,10 @@ export interface RoleFormData {
   status?: 'active' | 'inactive'
 }
 
+// Helper function to get translations
+const t = (key: string) => i18n.global.t(key)
+
 export const useRolesStore = defineStore('roles', () => {
-  const { t } = useI18n()
   const { permissions: allPermissions, fetchPermissions } = usePermissions()
   
   // State
