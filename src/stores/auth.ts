@@ -3,6 +3,12 @@ import router from "../router";
 import { notify } from "@/utils/notify";
 import api from "@/utils/api";
 
+export interface Permission {
+  id: number;
+  name: string;
+  display_name: string;
+}
+
 export const useAuthStore = defineStore("auth", {
   state: () => ({
     token: localStorage.getItem("token") || "",
@@ -14,12 +20,24 @@ export const useAuthStore = defineStore("auth", {
         return null;
       }
     })(),
+    permissions: (() => {
+      try {
+        const permissionsData = localStorage.getItem("permissions");
+        return permissionsData ? JSON.parse(permissionsData) : [];
+      } catch {
+        return [];
+      }
+    })(),
     resetToken: localStorage.getItem("reset_token") || "",
     loading: false,
   }),
   getters: { 
     isLoggedIn: (s) => !!s.token,
     isResetAuthorized: (s) => !!s.resetToken,
+    hasPermission: (s) => (permissionName: string) => {
+      return s.permissions.some((permission: Permission) => permission.name === permissionName);
+    },
+    getUserPermissions: (s) => s.permissions,
   },
   actions: {
     async login(formData:object) {
@@ -28,10 +46,15 @@ export const useAuthStore = defineStore("auth", {
         const response = await api.post("/login", formData);
 
         const { admin: user, token } = response.data.data;
+        const permissions = user.role?.permissions || [];
+        
         this.token = token;
         this.user = user;
+        this.permissions = permissions;
+        
         localStorage.setItem("token", token);
         localStorage.setItem("user", JSON.stringify(user));
+        localStorage.setItem("permissions", JSON.stringify(permissions));
 
         notify("success", `Welcome back, ${user.name}!`, response.data.message || "Login Successful");
         router.push("/");
@@ -46,27 +69,31 @@ export const useAuthStore = defineStore("auth", {
         this.loading = true;
         const response = await api.delete("/logout", {
         });
-      this.token = "";
-      this.user = null;
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-      notify("success", "Logged out successfully", response?.data?.message);
-      router.push("/login");
-    }
-    catch (error: any) {
-      notify("error", error?.response?.data?.message, "Logout Failed");
-    } finally {
-      this.loading = false;
-    }
-  },
+        this.token = "";
+        this.user = null;
+        this.permissions = [];
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        localStorage.removeItem("permissions");
+        notify("success", "Logged out successfully", response?.data?.message);
+        router.push("/login");
+      }
+      catch (error: any) {
+        notify("error", error?.response?.data?.message, "Logout Failed");
+      } finally {
+        this.loading = false;
+      }
+    },
 
   // Clear auth data without API call (for session expiry)
   clearAuthData() {
     this.token = "";
     this.user = null;
+    this.permissions = [];
     this.resetToken = "";
     localStorage.removeItem("token");
     localStorage.removeItem("user");
+    localStorage.removeItem("permissions");
     localStorage.removeItem("reset_token");
   },
     async resetPassword (formData: { email: string }) {

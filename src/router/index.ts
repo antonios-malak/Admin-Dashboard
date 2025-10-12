@@ -1,5 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { pagePermissions } from '@/utils/pagePermissions'
+import { notify } from '@/utils/notify'
+import i18n from '@/i18n'
 
 const routes = [
   { path: '/login', component: () => import('@/pages/Auth/login.vue') },
@@ -23,7 +26,9 @@ const routes = [
       // Medical Management
       { path: 'doctors', component: () => import('@/pages/Doctors.vue') },
       { path: 'specialities', component: () => import('@/pages/Specialities.vue') },
-      { path: 'follow-ups', component: () => import('@/pages/FollowUps.vue') },
+      { path: 'follow-ups', component: () => import('@/pages/FollowUps/index.vue') },
+      { path: 'recovery-plans', component: () => import('@/pages/RecoveryPlans.vue') },
+      
       
       // Content Management
       { path: 'filter-requests', component: () => import('@/pages/FilterRequests.vue') },
@@ -32,13 +37,9 @@ const routes = [
       { path: 'exercises', component: () => import('@/pages/Exercises.vue') },
       { path: 'sliders', component: () => import('@/pages/Sliders.vue') },
       
-      // Static Content
-      { path: 'about', component: () => import('@/pages/AppContent/About.vue') },
-      { path: 'terms', component: () => import('@/pages/AppContent/Terms.vue') },
-      { path: 'privacy', component: () => import('@/pages/AppContent/Privacy.vue') },
-      
       // Settings & Management
       { path: 'settings', component: () => import('@/pages/Settings.vue') },
+      { path: 'app-settings', component: () => import('@/pages/AppSettings.vue') },
       { path: 'contact-us', component: () => import('@/pages/ContactUs.vue') },
       { path: 'faqs', component: () => import('@/pages/FAQs.vue') },
       { path: 'app-pages', component: () => import('@/pages/AppPages.vue') },
@@ -48,6 +49,11 @@ const routes = [
       { path: 'locations/regions', component: () => import('@/pages/Locations/Regions.vue') },
       { path: 'locations/cities', component: () => import('@/pages/Locations/Cities.vue') },
       { path: 'locations/districts', component: () => import('@/pages/Locations/Districts.vue') },
+      
+      // Main Pages
+      { path: 'bags', component: () => import('@/pages/Bags.vue') },
+      { path: 'packages', component: () => import('@/pages/Packages.vue') },
+      { path: 'nationalities', component: () => import('@/pages/Nationalities.vue') },
     ]
   }
 ]
@@ -68,6 +74,13 @@ const publicRoutes = [
 // Routes that require reset token authorization
 const resetTokenRoutes = [
   '/resetpassword'
+]
+
+// Routes that are always accessible (no permission check needed)
+const alwaysAccessibleRoutes = [
+  '/',
+  '/my-account',
+  '/notifications'
 ]
 
 // Route guard middleware
@@ -96,7 +109,18 @@ router.beforeEach((to, _from, next) => {
     return next('/login')
   }
   
-  // User is authenticated, allow access
+  // Check permissions for protected routes
+  if (!alwaysAccessibleRoutes.includes(to.path)) {
+    const permissionKey = pagePermissions[to.path]
+    
+    // If route has permission key, check if user has permission
+    if (permissionKey && !authStore.hasPermission(permissionKey)) {
+      notify('warning', i18n.global.t('accessDenied.title'), i18n.global.t('accessDenied.message'))
+      return next('/') // Redirect to dashboard
+    }
+  }
+  
+  // User is authenticated and has permission, allow access
   next()
 })
 

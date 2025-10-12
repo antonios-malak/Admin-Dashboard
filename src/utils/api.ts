@@ -45,7 +45,7 @@ api.interceptors.response.use(
       authStore.clearAuthData()
       
       // Show notification to user
-      notify('warning', 'Session expired', 'Please login again')
+      notify('warning', 'err.response?.data?.message || Session expired ', 'err.response?.data?.errors?.permission ||Please login again ')
       
       // Redirect to login page using Vue Router
       if (router.currentRoute.value.path !== '/login') {

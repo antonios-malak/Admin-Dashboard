@@ -11,295 +11,161 @@
       class="sidebar-menu"
       :unique-opened="false"
     >
-      <!-- Dashboard -->
-      <el-menu-item index="/" @click="handleLinkClick" class="sidebar-item">
-        <span class="sidebar-item-text">{{
-          $t("appSidebar.navigation.dashboard")
-        }}</span>
-      </el-menu-item>
-
-      <!-- User Management -->
-      <el-sub-menu index="user-management" class="sidebar-submenu">
-        <template #title>
+      <!-- Dashboard - Show First -->
+      <template v-if="groupedMenu.dashboard">
+        <el-menu-item 
+          :index="groupedMenu.dashboard.route" 
+          @click="handleLinkClick" 
+          class="sidebar-item"
+        >
           <span class="sidebar-item-text">{{
-            $t("appSidebar.navigation.userManagement")
+            $t(`appSidebar.navigation.${groupedMenu.dashboard.name}`)
           }}</span>
-        </template>
-        <el-menu-item
-          class="sidebar-item"
-          index="/admins"
-          @click="handleLinkClick"
-          ><span class="sidebar-item-text">{{
-            $t("appSidebar.navigation.users")
-          }}</span></el-menu-item
-        >
-        <el-menu-item
-          class="sidebar-item"
-          index="/roles"
-          @click="handleLinkClick"
-          ><span class="sidebar-item-text">{{
-            $t("appSidebar.navigation.roles")
-          }}</span></el-menu-item
-        >
-        <el-menu-item
-          class="sidebar-item"
-          index="/permissions"
-          @click="handleLinkClick"
-          ><span class="sidebar-item-text">{{
-            $t("appSidebar.navigation.permissions")
-          }}</span></el-menu-item
-        >
-      </el-sub-menu>
+        </el-menu-item>
+      </template>
 
-      <!-- Medical Management -->
-      <el-sub-menu index="medical-management" class="sidebar-submenu">
-        <template #title>
+      <!-- Grouped Items (Submenus) - Show After Dashboard -->
+      <template v-for="(items, parentKey) in groupedMenu.groups" :key="parentKey">
+        <el-sub-menu :index="parentKey" class="sidebar-submenu">
+          <template #title>
+            <span class="sidebar-item-text">{{
+              $t(`appSidebar.navigation.${parentKey}`)
+            }}</span>
+          </template>
+          <el-menu-item
+            v-for="item in items"
+            :key="item.route"
+            class="sidebar-item"
+            :index="item.route"
+            @click="handleLinkClick"
+          >
+            <span class="sidebar-item-text">{{
+              $t(`appSidebar.navigation.${item.name}`)
+            }}</span>
+          </el-menu-item>
+        </el-sub-menu>
+      </template>
+
+      <!-- Standalone Items (Bags, Packages, etc.) - Show After Groups -->
+      <template v-for="item in groupedMenu.standaloneItems" :key="item.route">
+        <el-menu-item 
+          :index="item.route" 
+          @click="handleLinkClick" 
+          class="sidebar-item"
+        >
           <span class="sidebar-item-text">{{
-            $t("appSidebar.navigation.medicalManagement")
+            $t(`appSidebar.navigation.${item.name}`)
           }}</span>
-        </template>
-        <el-menu-item
-          class="sidebar-item"
-          index="/doctors"
-          @click="handleLinkClick"
-          ><span class="sidebar-item-text">{{
-            $t("appSidebar.navigation.doctors")
-          }}</span></el-menu-item
-        >
-        <el-menu-item
-          class="sidebar-item"
-          index="/specialities"
-          @click="handleLinkClick"
-          ><span class="sidebar-item-text">{{
-            $t("appSidebar.navigation.specialities")
-          }}</span></el-menu-item
-        >
-        <el-menu-item
-          class="sidebar-item"
-          index="/follow-ups"
-          @click="handleLinkClick"
-          ><span class="sidebar-item-text">{{
-            $t("appSidebar.navigation.followUps")
-          }}</span></el-menu-item
-        >
-        <el-menu-item
-          class="sidebar-item"
-          index="/exercises"
-          @click="handleLinkClick"
-          ><span class="sidebar-item-text">{{
-            $t("appSidebar.navigation.exercises")
-          }}</span></el-menu-item
-        >
-      </el-sub-menu>
-
-      <!-- Content Management -->
-      <el-sub-menu index="content-management" class="sidebar-submenu">
-        <template #title>
-          <span class="sidebar-item-text">{{
-            $t("appSidebar.navigation.contentManagement")
-          }}</span>
-        </template>
-        <el-menu-item
-          class="sidebar-item"
-          index="/community-posts"
-          @click="handleLinkClick"
-          ><span class="sidebar-item-text">{{
-            $t("appSidebar.navigation.communityPosts")
-          }}</span></el-menu-item
-        >
-        <el-menu-item
-          class="sidebar-item"
-          index="/advertisements"
-          @click="handleLinkClick"
-          ><span class="sidebar-item-text">{{
-            $t("appSidebar.navigation.advertisements")
-          }}</span></el-menu-item
-        >
-      </el-sub-menu>
-
-      <!-- App Content -->
-      <el-sub-menu index="app-content" class="sidebar-submenu">
-        <template #title>
-          <span class="sidebar-item-text">{{
-            $t("appSidebar.navigation.appContent")
-          }}</span>
-        </template>
-        <el-menu-item
-          class="sidebar-item"
-          index="/about"
-          @click="handleLinkClick"
-          ><span class="sidebar-item-text">{{
-            $t("appSidebar.navigation.about")
-          }}</span></el-menu-item
-        >
-        <el-menu-item
-          class="sidebar-item"
-          index="/terms"
-          @click="handleLinkClick"
-          ><span class="sidebar-item-text">{{
-            $t("appSidebar.navigation.terms")
-          }}</span></el-menu-item
-        >
-        <el-menu-item
-          class="sidebar-item"
-          index="/privacy"
-          @click="handleLinkClick"
-          ><span class="sidebar-item-text">{{
-            $t("appSidebar.navigation.privacy")
-          }}</span></el-menu-item
-        >
-      </el-sub-menu>
-
-      <!-- Settings -->
-      <el-sub-menu index="settings" class="sidebar-submenu">
-        <template #title>
-          <span class="sidebar-item-text">{{
-            $t("appSidebar.navigation.settings")
-          }}</span>
-        </template>
-        <el-menu-item
-          class="sidebar-item"
-          index="/settings"
-          @click="handleLinkClick"
-          ><span class="sidebar-item-text">{{
-            $t("appSidebar.navigation.settings")
-          }}</span></el-menu-item
-        >
-        <el-menu-item
-          class="sidebar-item"
-          index="/contact-us"
-          @click="handleLinkClick"
-          ><span class="sidebar-item-text">{{
-            $t("appSidebar.navigation.contactUs")
-          }}</span></el-menu-item
-        >
-        <el-menu-item
-          class="sidebar-item"
-          index="/faqs"
-          @click="handleLinkClick"
-          ><span class="sidebar-item-text">{{
-            $t("appSidebar.navigation.faqs")
-          }}</span></el-menu-item
-        >
-        <el-menu-item
-          class="sidebar-item"
-          index="/app-pages"
-          @click="handleLinkClick"
-          ><span class="sidebar-item-text">{{
-            $t("appSidebar.navigation.appPages")
-          }}</span></el-menu-item
-        >
-      </el-sub-menu>
-
-      <!-- Locations Management -->
-      <el-sub-menu index="locations-management" class="sidebar-submenu">
-        <template #title>
-          <span class="sidebar-item-text">{{
-            $t("appSidebar.navigation.locationsManagement")
-          }}</span>
-        </template>
-        <el-menu-item
-          class="sidebar-item"
-          index="/locations/countries"
-          @click="handleLinkClick"
-          ><span class="sidebar-item-text">{{
-            $t("appSidebar.navigation.countries")
-          }}</span></el-menu-item
-        >
-        <el-menu-item
-          class="sidebar-item"
-          index="/locations/regions"
-          @click="handleLinkClick"
-          ><span class="sidebar-item-text">{{
-            $t("appSidebar.navigation.regions")
-          }}</span></el-menu-item
-        >
-        <el-menu-item
-          class="sidebar-item"
-          index="/locations/cities"
-          @click="handleLinkClick"
-          ><span class="sidebar-item-text">{{
-            $t("appSidebar.navigation.cities")
-          }}</span></el-menu-item
-        >
-        <el-menu-item
-          class="sidebar-item"
-          index="/locations/districts"
-          @click="handleLinkClick"
-          ><span class="sidebar-item-text">{{
-            $t("appSidebar.navigation.districts")
-          }}</span></el-menu-item
-        >
-      </el-sub-menu>
-
-      <!-- Last 3 pages as requested -->
-      <!-- Auto Consultation -->
-      <el-menu-item
-        class="sidebar-item"
-        index="/auto-consultation"
-        @click="handleLinkClick"
-        ><span class="sidebar-item-text">{{
-          $t("appSidebar.navigation.autoConsultation")
-        }}</span></el-menu-item
-      >
-      <!-- Winding-up Requests -->
-      <el-menu-item
-        class="sidebar-item"
-        index="/filter-requests"
-        @click="handleLinkClick"
-        ><span class="sidebar-item-text">{{
-          $t("appSidebar.navigation.windingUpRequests")
-        }}</span></el-menu-item
-      >
-
-      <!-- Emojis -->
-      <el-menu-item
-        class="sidebar-item"
-        index="/emojis"
-        @click="handleLinkClick"
-        ><span class="sidebar-item-text">{{
-          $t("appSidebar.navigation.emojis")
-        }}</span></el-menu-item
-      >
-      <el-menu-item
-        class="sidebar-item"
-        index="/sliders"
-        @click="handleLinkClick"
-        ><span class="sidebar-item-text">{{
-          $t("appSidebar.navigation.sliders")
-        }}</span></el-menu-item
-      >
-
-      <el-menu-item
-        index="/my-account"
-        @click="handleLinkClick"
-        class="sidebar-item"
-      >
-        <span class="sidebar-item-text">{{
-          $t("appSidebar.navigation.myAccount")
-        }}</span>
-      </el-menu-item>
-
-      <el-menu-item
-        class="sidebar-item"
-        index="/notifications"
-        @click="handleLinkClick"
-        ><span class="sidebar-item-text">{{
-          $t("appSidebar.navigation.notifications")
-        }}</span></el-menu-item
-      >
+        </el-menu-item>
+      </template>
     </el-menu>
   </div>
 </template>
 
 <script setup lang="ts">
-  const emit = defineEmits<{
-    "link-clicked": [];
-  }>();
+import { computed } from 'vue'
+import { useAuthStore } from '@/stores/auth'
+import { pagePermissions } from '@/utils/pagePermissions'
 
-  const handleLinkClick = () => {
-    emit("link-clicked");
-  };
+const emit = defineEmits<{
+  "link-clicked": [];
+}>();
+
+const authStore = useAuthStore()
+
+const handleLinkClick = () => {
+  emit("link-clicked");
+};
+
+// Define menu items structure
+const menuItems = [
+  // Dashboard
+  { route: '/', name: 'dashboard', type: 'item' },
+  
+  // User Management
+  { route: '/admins', name: 'users', type: 'item', parent: 'userManagement' },
+  { route: '/roles', name: 'roles', type: 'item', parent: 'userManagement' },
+  { route: '/permissions', name: 'permissions', type: 'item', parent: 'userManagement' },
+  
+  // Medical Management
+  { route: '/doctors', name: 'doctors', type: 'item', parent: 'medicalManagement' },
+  { route: '/specialities', name: 'specialities', type: 'item', parent: 'medicalManagement' },
+  { route: '/follow-ups', name: 'followUps', type: 'item', parent: 'medicalManagement' },
+  { route: '/recovery-plans', name: 'recoveryPlans', type: 'item', parent: 'medicalManagement' },
+  { route: '/exercises', name: 'exercises', type: 'item', parent: 'medicalManagement' },
+  
+  // Content Management
+  { route: '/community-posts', name: 'communityPosts', type: 'item', parent: 'contentManagement' },
+  { route: '/advertisements', name: 'advertisements', type: 'item', parent: 'contentManagement' },
+  
+  // Settings
+  { route: '/settings', name: 'settings', type: 'item', parent: 'settingsManagement' },
+  { route: '/app-settings', name: 'appSettings', type: 'item', parent: 'settingsManagement' },
+  { route: '/contact-us', name: 'contactUs', type: 'item', parent: 'settingsManagement' },
+  { route: '/faqs', name: 'faqs', type: 'item', parent: 'settingsManagement' },
+  { route: '/app-pages', name: 'appPages', type: 'item', parent: 'settingsManagement' },
+  
+  // Locations Management
+  { route: '/locations/countries', name: 'countries', type: 'item', parent: 'locationsManagement' },
+  { route: '/locations/regions', name: 'regions', type: 'item', parent: 'locationsManagement' },
+  { route: '/locations/cities', name: 'cities', type: 'item', parent: 'locationsManagement' },
+  { route: '/locations/districts', name: 'districts', type: 'item', parent: 'locationsManagement' },
+  
+  // Main Pages (after Locations Management)
+  { route: '/bags', name: 'bags', type: 'item' },
+  { route: '/packages', name: 'packages', type: 'item' },
+  { route: '/nationalities', name: 'nationalities', type: 'item' },
+  
+  // Last pages as requested
+  { route: '/auto-consultation', name: 'autoConsultation', type: 'item' },
+  { route: '/filter-requests', name: 'windingUpRequests', type: 'item' },
+  { route: '/emojis', name: 'emojis', type: 'item' },
+  { route: '/sliders', name: 'sliders', type: 'item' },
+  
+  // Personal pages
+  { route: '/my-account', name: 'myAccount', type: 'item' },
+  { route: '/notifications', name: 'notifications', type: 'item' },
+]
+
+// Filtered menu based on permissions
+const filteredMenu = computed(() => {
+  const filtered = menuItems.filter(item => {
+    // Always show dashboard
+    if (item.route === '/') {
+      return true;
+    }
+    
+    const perm = pagePermissions[item.route];
+    return !perm || authStore.hasPermission(perm);
+  });
+  
+  return filtered;
+});
+
+// Group filtered items by parent
+const groupedMenu = computed(() => {
+  const groups: Record<string, any[]> = {};
+  const standaloneItems: any[] = [];
+  
+  filteredMenu.value.forEach(item => {
+    if (item.route === '/') {
+      // Dashboard will be handled separately
+      return;
+    } else if (item.parent) {
+      if (!groups[item.parent]) {
+        groups[item.parent] = [];
+      }
+      groups[item.parent].push(item);
+    } else {
+      standaloneItems.push(item);
+    }
+  });
+  
+  // Find dashboard item
+  const dashboard = filteredMenu.value.find(item => item.route === '/');
+  
+  return { groups, standaloneItems, dashboard };
+});
 </script>
 
 <style scoped>

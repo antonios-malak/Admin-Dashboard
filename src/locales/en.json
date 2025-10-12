@@ -50,6 +50,7 @@
       "doctors": "Doctors",
       "specialities": "Medical Specialties",
       "followUps": "Follow-ups",
+      "recoveryPlans": "Recovery Plans",
       "contentManagement": "Content Management",
       "windingUpRequests": "Winding-up Requests",
       "communityPosts": "Community Posts",
@@ -60,7 +61,8 @@
       "terms": "Terms & Conditions",
       "privacy": "Privacy Policy",
       "settingsManagement": "Settings",
-      "settings": "Settings",
+      "settings": "General Settings",
+      "appSettings": "App Settings",
       "contactUs": "Contact Messages",
       "faqs": "FAQs",
       "appPages": "App Pages",
@@ -69,6 +71,9 @@
       "regions": "Regions",
       "cities": "Cities",
       "districts": "Districts",
+      "bags": "Bags",
+      "packages": "Packages",
+      "nationalities": "Nationalities",
       "sliders": "Sliders"
     }
   },
@@ -402,9 +407,29 @@
     "title": "Follow-up Records",
     "description": "Manage patient follow-up appointments and records"
   },
+  "recoveryPlans": {
+    "title": "Recovery Plans",
+    "subtitle": "Manage patient recovery plans and treatment protocols"
+  },
+  "bags": {
+    "title": "Bags",
+    "subtitle": "Manage bags and containers"
+  },
+  "packages": {
+    "title": "Packages",
+    "subtitle": "Manage packages and bundles"
+  },
+  "nationalities": {
+    "title": "Nationalities",
+    "subtitle": "Manage nationalities and citizenship information"
+  },
   "filterRequests": {
-    "title": "Filter Requests",
-    "description": "Manage user filter requests and preferences"
+    "title": "Winding-up Requests",
+    "description": "Manage Winding-up Requests"
+  },
+  "accessDenied": {
+    "title": "Access Denied",
+    "message": "You do not have permission to access this page"
   },
   "communityPosts": {
     "title": "Community Posts",
@@ -422,21 +447,15 @@
     "title": "Sliders",
     "description": "Manage homepage sliders and banners"
   },
-  "about": {
-    "title": "About Us",
-    "description": "Learn more about our application and services"
-  },
-  "terms": {
-    "title": "Terms & Conditions",
-    "description": "Read our terms and conditions"
-  },
-  "privacy": {
-    "title": "Privacy Policy",
-    "description": "Read our privacy policy and data protection information"
-  },
   "settings": {
     "title": "Settings",
     "description": "Manage application settings and configurations"
+  },
+  "appSettings": {
+    "title": "App Settings",
+    "subtitle": "Manage application configuration and preferences",
+    "comingSoon": "Coming Soon",
+    "description": "This section will contain advanced application settings and configuration options."
   },
   "faqs": {
     "title": "Frequently Asked Questions",
