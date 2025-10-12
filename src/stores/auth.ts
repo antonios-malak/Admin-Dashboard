@@ -6,26 +6,34 @@ import api from "@/utils/api";
 export const useAuthStore = defineStore("auth", {
   state: () => ({
     token: localStorage.getItem("token") || "",
-    user: JSON.parse(localStorage.getItem("user") || "null"),
+    user: (() => {
+      try {
+        const userData = localStorage.getItem("user");
+        return userData ? JSON.parse(userData) : null;
+      } catch {
+        return null;
+      }
+    })(),
+    resetToken: localStorage.getItem("reset_token") || "",
     loading: false,
   }),
-  getters: { isLoggedIn: (s) => !!s.token },
+  getters: { 
+    isLoggedIn: (s) => !!s.token,
+    isResetAuthorized: (s) => !!s.resetToken,
+  },
   actions: {
-    async login(email: string, password: string) {
+    async login(formData:object) {
       try {
         this.loading = true;
-        const response = await api.post("/auth/login", {
-          email, 
-          password,
-        });
+        const response = await api.post("/login", formData);
 
-        const { user, token } = response.data;
+        const { admin: user, token } = response.data.data;
         this.token = token;
         this.user = user;
         localStorage.setItem("token", token);
         localStorage.setItem("user", JSON.stringify(user));
 
-        notify("success", `Welcome back, ${user.name}!`, "Login Successful");
+        notify("success", `Welcome back, ${user.name}!`, response.data.message || "Login Successful");
         router.push("/");
       } catch (error: any) {
         notify("error", error?.response?.data?.message, "Login Failed");
@@ -33,64 +41,80 @@ export const useAuthStore = defineStore("auth", {
         this.loading = false;
       }
     },
-    logout() {
+    async logout() {
+      try {
+        this.loading = true;
+        const response = await api.delete("/logout", {
+        });
       this.token = "";
       this.user = null;
       localStorage.removeItem("token");
       localStorage.removeItem("user");
+      notify("success", "Logged out successfully", response?.data?.message);
       router.push("/login");
-    },
-    async forgotPassword(email: string) {
-      try {
-        this.loading = true;
-        await api.post("/auth/forgot-password", { email });
-        notify("success", "Password reset link sent to your email", "Success");
-        const param = new URLSearchParams({ email });
-        router.push("/otp?" + param.toString());
-      } catch (error: any) {
-        notify("error", error?.response?.data?.message, "Error");
-      } finally {
-        this.loading = false;
-        const param = new URLSearchParams({ email });
-        router.push("/otp?" + param.toString());
+    }
+    catch (error: any) {
+      notify("error", error?.response?.data?.message, "Logout Failed");
+    } finally {
+      this.loading = false;
+    }
+  },
 
-      }
-    },
-    async verifyOtp(email: string, otp: string) {
+  // Clear auth data without API call (for session expiry)
+  clearAuthData() {
+    this.token = "";
+    this.user = null;
+    this.resetToken = "";
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    localStorage.removeItem("reset_token");
+  },
+    async resetPassword (formData: { email: string }) {
       try {
         this.loading = true;
-        await api.post("/auth/verify-otp", { email, otp });
-        notify("success", "OTP verified successfully", "Success");
-        const param = new URLSearchParams({ email });
-        router.push("/resetpassword?" + param.toString());
+        const response =await api.post("reset-password-code", formData);
+        notify("success", response?.data?.message, "Success");
+        router.push({ path: "/otp", query: { email: formData.email } });
       } catch (error: any) {
         notify("error", error?.response?.data?.message, "Error");
       } finally {
         this.loading = false;
-        const param = new URLSearchParams({ email });
-        console.log(param);
-        router.push("/resetpassword?" + param.toString());
       }
     },
-    async resetPassword (formData: object) {
-      try {
+    async confirmCode(formData: { email: string, code: string }){
+      try{ 
         this.loading = true;
-        await api.post("/auth/reset-password", formData);
-        notify("success", "Password reset successfully", "Success");
-        router.push("/login");
+        const response = await api.post("verify-reset-code", formData);
+        
+        // Save reset token for password reset authorization
+        if (response.data.data?.reset_token) {
+          this.resetToken = response.data.data.reset_token;
+          localStorage.setItem("reset_token", this.resetToken);
+        }
+        
+        notify("success", response?.data?.message, "Success");
+        router.push({ path: "/resetpassword", query: { email: formData.email } });
       } catch (error: any) {
         notify("error", error?.response?.data?.message, "Error");
       } finally {
         this.loading = false;
-        router.push("/login");
-      }
+      } 
     },
+  
+
+
     async changePassword(formData: object) {
       try {
         this.loading = true;
         console.log(formData);
-        await api.post("/auth/reset-password", formData);
-        notify("success", "Password changed successfully", "Success");
+        const response = await api.post("/reset-password", formData);
+        notify("success", response?.data?.message, "Success");
+        
+        // Clear reset token after successful password change
+        this.resetToken = "";
+        localStorage.removeItem("reset_token");
+        
+        router.push("/login");
       } catch (error: any) {
         notify("error", error?.response?.data?.message, "Error");
         throw error; // Re-throw to handle in component

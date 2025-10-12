@@ -16,8 +16,8 @@
         :rules="validationRules"
         @submit.prevent="submit"
       >
-        <el-form-item prop="Email" >
-          <el-input class="mb-4" v-model="formData.Email" :placeholder="$t('forgot.email')" />
+        <el-form-item prop="email" >
+          <el-input class="mb-4" v-model="formData.email" :placeholder="$t('forgot.email')" />
         </el-form-item>
         
         <el-form-item >
@@ -40,35 +40,23 @@
   import { useI18n } from 'vue-i18n';
   import type { FormInstance, FormRules } from "element-plus";
   import { useAuthStore } from "@/stores/auth";
+  import { createRules } from '@/utils/validation'
 
   const formRef = ref<FormInstance>();
   const { t } = useI18n();
   const auth = useAuthStore();
 
   const formData = reactive({
-    Email: "",
-    password: "",
+    email: "",
   });
 
   const validationRules = computed<FormRules>(() => ({
-    Email: [
-      { required: true, message: t('forgot.validation.email_required'), trigger: "blur" },
-      {
-        max: 100,
-        message: t('forgot.validation.email_max'),
-        trigger: "blur",
-      },
-      {
-        pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-        message: t('forgot.validation.email_invalid'),
-        trigger: "blur",
-      },
-    ],
-  }));
+    email: createRules.email()
+  }))
 
   const valid = computed(() => {
     return (
-      formData.Email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/) 
+      formData.email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/) 
     );
   });
 
@@ -77,7 +65,7 @@
 
     await formRef.value.validate((valid) => {
       if (valid) {
-        auth.forgotPassword(formData.Email);
+        auth.resetPassword(formData);
       }
     });
   }

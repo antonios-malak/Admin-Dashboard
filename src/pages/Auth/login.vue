@@ -16,8 +16,8 @@
         :rules="validationRules"
         @submit.prevent="submit"
       >
-        <el-form-item prop="Email" class="pb-4">
-          <el-input v-model="formData.Email" :placeholder="$t('login.email')" />
+        <el-form-item prop="email" class="pb-4">
+          <el-input v-model="formData.email" :placeholder="$t('login.email')" />
         </el-form-item>
         <el-form-item prop="password" class="pb-4">
           <el-input
@@ -57,61 +57,25 @@
   import type { FormInstance, FormRules } from "element-plus";
   import { useAuthStore } from "@/stores/auth";
   import { useI18n } from "vue-i18n";
+  import { createRules } from '@/utils/validation'
 
   const formRef = ref<FormInstance>();
   const auth = useAuthStore();
   const { t } = useI18n();
 
   const formData = reactive({
-    Email: "",
+    email: "",
     password: "",
   });
 
   const validationRules = computed<FormRules>(() => ({
-    Email: [
-      {
-        required: true,
-        message: t("login.validation.email_required"),
-        trigger: "blur",
-      },
-      {
-        max: 100,
-        message: t("login.validation.email_max"),
-        trigger: "blur",
-      },
-      {
-        pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-        message: t("login.validation.email_invalid"),
-        trigger: "blur",
-      },
-    ],
-    password: [
-      {
-        required: true,
-        message: t("login.validation.password_required"),
-        trigger: "blur",
-      },
-      {
-        min: 8,
-        message: t("login.validation.password_min"),
-        trigger: "blur",
-      },
-      {
-        max: 25,
-        message: t("login.validation.password_max"),
-        trigger: "blur",
-      },
-      {
-        pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/,
-        message: t("login.validation.password_pattern"),
-        trigger: "blur",
-      },
-    ],
-  }));
+    email: createRules.email(),
+    password: createRules.password()
+  }))
 
   const valid = computed(() => {
     return (
-      formData.Email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/) &&
+      formData.email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/) &&
       formData.password.match(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/) &&
       formData.password.length >= 8
     );
@@ -122,7 +86,7 @@
 
     await formRef.value.validate((valid) => {
       if (valid) {
-        auth.login(formData.Email, formData.password);
+        auth.login(formData);
       }
     });
   }

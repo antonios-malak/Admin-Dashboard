@@ -9,10 +9,10 @@
     
     <!-- Sidebar -->
     <el-aside 
-      :width="sidebarOpen || !isMobile ? '220px' : '0px'"
+      :width="sidebarOpen || !isMobile ? '280px' : '0px'"
       :class="[
         'transition-all duration-300 ease-in-out overflow-hidden',
-        'md:!w-[220px]', // Always show on md+ screens
+        'md:!w-[280px]', // Always show on md+ screens
         isMobile && sidebarOpen ? 'fixed left-3 top-3 bottom-3 z-50 bg-white rounded-lg shadow-xl' : '',
         isMobile ? 'md:relative md:left-auto md:top-auto md:bottom-auto' : ''
       ]"

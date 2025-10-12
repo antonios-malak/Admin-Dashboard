@@ -30,11 +30,15 @@
           :loading="loading"
           :empty-message="$t('permissions.table.emptyMessage')"
         >
-          <!-- Created At Slot -->
-          <template #createdAt="{ row }">
-            <span class="text-sm text-gray-500">
-              {{ formatDate(row.createdAt) }}
-            </span>
+          <!-- Name Column enforce locale direction -->
+          <template #name="{ row }">
+            <span :dir="dir">{{ row.name }}</span>
+          </template>
+          <!-- Actions Column -->
+          <template #action="{ row }">
+            <el-button circle type="primary" plain size="small" @click="openDetails(row)">
+              <el-icon><View /></el-icon>
+            </el-button>
           </template>
         </DataTable>
       </template>
@@ -48,21 +52,37 @@
       <p class="mt-2 text-gray-500">{{ $t('permissions.loading') }}</p>
     </div>
 
+    <el-dialog v-model="showDetails" :title="selectedGroup.title" width="480px">
+      <div class="space-y-2">
+        <div v-for="item in selectedGroup.permissions" :key="item.id" class="py-1">
+          {{ item.display_name }}
+        </div>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Refresh, Loading } from '@element-plus/icons-vue'
+import { Refresh, Loading, View } from '@element-plus/icons-vue'
 import PageHeader from '@/components/PageHeader.vue'
 import DataTable from '@/components/DataTable.vue'
 import LocalPagination from '@/components/LocalPagination.vue'
-import { usePermissions} from '@/composables/usePermissions'
+import { usePermissionsStore } from '@/stores/permissions'
 
 // Composables
 const { t } = useI18n()
-const { permissions, loading, fetchPermissions, refreshPermissions } = usePermissions()
+const permStore = usePermissionsStore()
+const permissions = computed(() => permStore.permissions.map(p => ({
+  ...p,
+  // override table fields: name column shows group title
+  name: permStore.groups[p.category]?.title || p.name
+})))
+const dir = computed(() => document.documentElement.getAttribute('dir') || 'ltr')
+const loading = computed(() => permStore.loading)
+const fetchPermissions = () => permStore.fetchPermissions()
+const refreshPermissions = () => permStore.updatePermissions()
 
 // Table columns configuration
 const tableColumns = computed(() => [
@@ -72,20 +92,28 @@ const tableColumns = computed(() => [
     width: '80px'
   },
   {
-    prop: 'name',
+    prop: 'name', // will show group title
     label: t('permissions.table.columns.name'),
-    minWidth: '300px'
+    minWidth: '200px',
+    slot: 'name'
   },
   {
-    prop: 'createdAt',
-    label: t('permissions.table.columns.createdAt'),
-    width: '150px'
+    prop: 'action', // actions column now
+    label: t('permissions.actions'),
+    width: '180px',
+    slot: 'action'
   }
 ])
 
-// Helper functions
-const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleDateString()
+// Modal state for details
+const showDetails = ref(false)
+const selectedGroup = computed(() => {
+  return permStore.groups[activeCategory.value] || { title: '', permissions: [] }
+})
+const activeCategory = ref('')
+const openDetails = (row: any) => {
+  activeCategory.value = row.category
+  showDetails.value = true
 }
 
 // Lifecycle

@@ -39,6 +39,57 @@
     .el-select__wrapper{
       text-align: right !important;
     }
+    /* Element Plus Table RTL fix */
+    .el-table .el-table__cell {
+      text-align: right !important;
+    }
+
+    /* Element Plus Input prefix/suffix positions */
+    .el-input__prefix {
+      right: 8px !important;
+      left: auto !important;
+    }
+    .el-input__suffix {
+      left: 8px !important;
+      right: auto !important;
+    }
+
+    /* Element Plus Notification placement swap */
+    .el-notification.right {
+      left: 16px !important;
+      right: auto !important;
+    }
+    .el-notification.left {
+      right: 16px !important;
+      left: auto !important;
+    }
+
+    /* Breadcrumb arrow direction */
+    .el-breadcrumb__separator {
+      transform: scaleX(-1);
+    }
+
+    /* --- Icon/text spacing swaps for RTL --- */
+    /* Buttons: icon before text -> space on left; icon after text -> space on right */
+    .el-button .el-icon {
+      margin-left: 6px !important;
+      margin-right: 0 !important;
+    }
+    .el-button span + .el-icon,
+    .el-button .el-button__text + .el-icon {
+      margin-right: 6px !important;
+      margin-left: 0 !important;
+    }
+
+    /* Notifications: space between status icon and text, and close button */
+    .el-notification__icon {
+      margin-left: 8px !important;
+      margin-right: 0 !important;
+    }
+    .el-notification__closeBtn {
+      margin-right: 8px !important;
+      margin-left: 0 !important;
+    }
     /* Margin Right to Left */
     .mr-1 { margin-left: 0.25rem !important; margin-right: 0 !important; }
     .mr-2 { margin-left: 0.5rem !important; margin-right: 0 !important; }
@@ -126,6 +177,24 @@
     .pr-72 { padding-left: 18rem !important; padding-right: 0 !important; }
     .pr-80 { padding-left: 20rem !important; padding-right: 0 !important; }
     .pr-96 { padding-left: 24rem !important; padding-right: 0 !important; }
+    
+    /* Element Plus Submenu Arrow RTL Fix */
+    .el-sub-menu .el-sub-menu__icon-arrow {
+      right: auto !important;
+      left: 16px !important;
+      margin-right: 0 !important;
+      margin-left: 0 !important;
+    }
+    
+    .el-sub-menu .el-sub-menu__title {
+      padding-right: 0 !important;
+      padding-left: 40px !important;
+    }
+    
+    /* Make submenu items have same padding as regular menu items */
+    .el-sub-menu .el-sub-menu__title {
+      padding: 0 var(--el-menu-base-level-padding) !important;
+    }
   }
 }
 

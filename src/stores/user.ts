@@ -10,12 +10,19 @@ export interface User {
   name: string
   email: string
   phone?: string
-  role: string
+  role: { id: string | number; name: string }
   status: 'active' | 'inactive'
   avatar?: string
   permissions?: string[]
   createdAt: string
   updatedAt: string
+  is_active: number
+  image?: string
+  created_at: string
+  last_login_at?: string | null
+  locale?: string
+  login_count?: number
+  reason_to_deactivate?: string | null
 }
 
 // Form data interface for creating/updating users
@@ -52,10 +59,11 @@ export const useUserStore = defineStore('user', () => {
   const usersByRole = computed(() => {
     const grouped: Record<string, User[]> = {}
     users.value.forEach(user => {
-      if (!grouped[user.role]) {
-        grouped[user.role] = []
+      const roleKey = user.role?.name || 'Unknown'
+      if (!grouped[roleKey]) {
+        grouped[roleKey] = []
       }
-      grouped[user.role].push(user)
+      grouped[roleKey].push(user)
     })
     return grouped
   })
@@ -66,10 +74,9 @@ export const useUserStore = defineStore('user', () => {
       loading.value = true
       error.value = null
       
-      const response = await api.get('/users')
+      const response = await api.get('/admins')
       users.value = response.data.data || response.data
       
-      notify('success', t('users.messages.success.userAdded'), t('users.title'))
     } catch (err: any) {
       error.value = err?.response?.data?.message || t('users.messages.error.fetchUsers')
       notify('error', error.value || t('users.messages.error.fetchUsers'), t('users.title'))
@@ -79,12 +86,12 @@ export const useUserStore = defineStore('user', () => {
     }
   }
 
-  const addUser = async (formData: UserFormData) => {
+  const addUser = async (formData: UserFormData | FormData) => {
     try {
       loading.value = true
       error.value = null
       
-      const response = await api.post('/users', formData)
+      const response = await api.post('/admins', formData)
       const newUser = response.data.data || response.data
       
       users.value.push(newUser)
@@ -100,12 +107,12 @@ export const useUserStore = defineStore('user', () => {
     }
   }
 
-  const updateUser = async (userId: string | number, formData: Partial<UserFormData>) => {
+  const updateUser = async (userId: string | number, formData: Partial<UserFormData> | FormData) => {
     try {
       loading.value = true
       error.value = null
       
-      const response = await api.put(`/users/${userId}`, formData)
+      const response = await api.post(`/admins/${userId}?_method=PUT`, formData)
       const updatedUser = response.data.data || response.data
       
       const index = users.value.findIndex(user => user.id === userId)
@@ -130,7 +137,7 @@ export const useUserStore = defineStore('user', () => {
       loading.value = true
       error.value = null
       
-      await api.delete(`/users/${userId}`)
+      await api.delete(`/admins/${userId}`)
       
       users.value = users.value.filter(user => user.id !== userId)
       notify('success', t('users.messages.success.userDeleted'), t('users.title'))
@@ -144,32 +151,23 @@ export const useUserStore = defineStore('user', () => {
     }
   }
 
-  const toggleUserStatus = async (userId: string | number) => {
+  const toggleUserStatus = async (userId: string | number, reasonToDeactivate?: string) => {
     try {
       loading.value = true
       error.value = null
-      
-      const user = users.value.find(u => u.id === userId)
-      if (!user) {
-        throw new Error('User not found')
+    
+      const requestData: any = {}
+      if (reasonToDeactivate) {
+        requestData.reason_to_deactivate = reasonToDeactivate
       }
       
-      const newStatus = user.status === 'active' ? 'inactive' : 'active'
+      const response = await api.post(`/admins/${userId}/toggle`, requestData)      
       
-      const response = await api.patch(`/users/${userId}/toggle-status`, {
-        status: newStatus
-      })
+      notify('success', response.data.message || t('users.messages.success.statusChanged'), t('users.title'))
       
-      const updatedUser = response.data.data || response.data
+      // Refresh users list after successful status change
+      await fetchUsers()
       
-      const index = users.value.findIndex(u => u.id === userId)
-      if (index !== -1) {
-        users.value[index] = updatedUser
-      }
-      
-      notify('success', t('users.messages.success.statusChanged'), t('users.title'))
-      
-      return updatedUser
     } catch (err: any) {
       error.value = err?.response?.data?.message || t('users.messages.error.toggleStatus')
       notify('error', error.value || t('users.messages.error.toggleStatus'), t('users.title'))
@@ -191,7 +189,7 @@ export const useUserStore = defineStore('user', () => {
       user.name.toLowerCase().includes(lowercaseQuery) ||
       user.email.toLowerCase().includes(lowercaseQuery) ||
       user.phone?.toLowerCase().includes(lowercaseQuery) ||
-      user.role.toLowerCase().includes(lowercaseQuery)
+      user.role?.name?.toLowerCase().includes(lowercaseQuery)
     )
   }
 

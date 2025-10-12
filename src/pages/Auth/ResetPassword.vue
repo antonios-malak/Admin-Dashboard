@@ -26,10 +26,10 @@
                 show-password
               />
             </el-form-item>
-            <el-form-item prop="confirmPassword">
+            <el-form-item prop="password_confirmation">
               <el-input
                 class="my-2"
-                v-model="formData.confirmPassword"
+                v-model="formData.password_confirmation"
                 :placeholder="$t('resetpassword.confirmPassword')"
                 type="password"
                 show-password
@@ -54,6 +54,7 @@
   import { useAuthStore } from "@/stores/auth";
   import router from "@/router";
   import { useRoute } from 'vue-router';
+  import { useI18n } from 'vue-i18n';
   
   const route = useRoute();
   const email = route.query.email;
@@ -64,29 +65,15 @@
   const formData = reactive({
     email: email || "",
     password: "",
-    confirmPassword: ""
+    password_confirmation: ""
   });
     
-  import { useI18n } from 'vue-i18n';
+import { createRules } from '@/utils/validation'
   const { t } = useI18n();
 
   const validationRules = computed(() => ({
-    password: [
-      { required: true, message: t('resetpassword.validation.password_required'), trigger: "blur" },
-      { min: 8, message: t('resetpassword.validation.password_min'), trigger: "blur" },
-      { max: 25, message: t('resetpassword.validation.password_max'), trigger: "blur" },
-      { pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/, message: t('resetpassword.validation.password_pattern'), trigger: "blur" }
-    ],
-    confirmPassword: [
-      { required: true, message: t('resetpassword.validation.confirm_required'), trigger: "blur" },
-      { validator: (rule, value, callback) => {
-        if (value !== formData.password) {
-          callback(new Error(t('resetpassword.validation.confirm_match')));
-        } else {
-          callback();
-        }
-      }, trigger: "blur" }
-    ]
+    password: createRules.password(),
+    password_confirmation: createRules.confirmPassword(() => formData.password)
   }));
     
     const submit = async () => {
@@ -94,7 +81,7 @@
             if (valid) {
                 try {
                     auth.loading = true;
-                    await auth.resetPassword(formData);
+                    await auth.changePassword(formData);
                     router.push("/login");
                 } catch (error) {
                     // Handle error (e.g., show notification)

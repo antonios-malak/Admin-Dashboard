@@ -3,31 +3,30 @@ import { ref, computed } from 'vue'
 import api from '@/utils/api'
 import { notify } from '@/utils/notify'
 import i18n from '@/i18n'
-import { usePermissions } from '@/composables/usePermissions'
+import { usePermissionsStore } from '@/stores/permissions'
 
 // Role interface
 export interface Role {
   id: string | number
   name: string
-  permissions: string[]
-  status: 'active' | 'inactive'
-  createdAt: string
-  updatedAt: string
+  permissions: Array<string | { id: number; name: string; display_name: string }>
+  status?: 'active' | 'inactive'
+  createdAt?: string
+  updatedAt?: string
   isSystemRole?: boolean // For system roles that cannot be deleted
 }
 
 // Form data interface for creating/updating roles
 export interface RoleFormData {
   name: string
-  permissions: string[]
-  status?: 'active' | 'inactive'
+  permission: string[]
 }
 
 // Helper function to get translations
 const t = (key: string) => i18n.global.t(key)
 
 export const useRolesStore = defineStore('roles', () => {
-  const { permissions: allPermissions, fetchPermissions } = usePermissions()
+  const permissionsStore = usePermissionsStore()
   
   // State
   const roles = ref<Role[]>([])
@@ -51,7 +50,7 @@ export const useRolesStore = defineStore('roles', () => {
 
   // Available permissions for selection (all permissions)
   const availablePermissions = computed(() => 
-    allPermissions.value.map(permission => permission.name)
+    permissionsStore.permissions.map(permission => permission.name)
   )
 
   // Actions
@@ -61,7 +60,7 @@ export const useRolesStore = defineStore('roles', () => {
       error.value = null
       
       // Fetch permissions first to populate availablePermissions
-      await fetchPermissions()
+      await permissionsStore.fetchPermissions()
       
       const response = await api.get('/roles')
       roles.value = response.data.data || response.data

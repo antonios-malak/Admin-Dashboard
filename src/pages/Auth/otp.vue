@@ -16,13 +16,13 @@
         label-position="top"
         @submit.prevent="submit"
       >
-        <el-form-item prop="otp" class="otp-form-item-center">
+        <el-form-item prop="code" class="otp-form-item-center">
           <div class="otp-label">{{ $t("otp.label") }}</div>
           <div class="otp-boxes">
             <el-input
               v-for="(digit, idx) in 4"
               :key="idx"
-              v-model="formData.otp[idx]"
+              v-model="otpDigits[idx]"
               maxlength="1"
               class="otp-input"
               @input="onOtpInput(idx, $event)"
@@ -69,27 +69,35 @@
   const auth = useAuthStore();
 
   const formData = reactive({
-    otp: Array(4).fill(""),
+    code: "",
+    email: email || "",
   });
 
-  // Refs for each input
+  // Individual digit inputs
+  const otpDigits = ref(Array(4).fill(""));
   const otpInputRefs = Array(4).fill(null);
 
   // Move to next input on entry
   function onOtpInput(idx, val) {
-    if (val && val.length === 1 && idx < 3) {
-      otpInputRefs[idx + 1]?.focus();
-    }
     // Only allow numbers
     if (/[^0-9]/.test(val)) {
-      formData.otp[idx] = val.replace(/[^0-9]/g, "");
+      otpDigits.value[idx] = val.replace(/[^0-9]/g, "");
+    } else {
+      otpDigits.value[idx] = val;
+    }
+    
+    // Update the main code
+    formData.code = otpDigits.value.join("");
+    
+    // Move to next input if current is filled
+    if (val && val.length === 1 && idx < 3) {
+      otpInputRefs[idx + 1]?.focus();
     }
   }
 
   async function submit() {
-    const otp = formData.otp.join("");
     console.log(email);
-    auth.verifyOtp(email, otp);
+    auth.confirmCode(formData);
   }
   import { onUnmounted } from 'vue';
   const timer = ref(0);
@@ -111,7 +119,7 @@
 
   async function resendOtp() {
     if (resendDisabled.value) return;
-    auth.forgotPassword(email);
+    auth.resetPassword(formData);
     startResendTimer();
   }
 

@@ -41,8 +41,8 @@
       <template #avatar="{ row }">
         <div class="flex items-center gap-2">
           <el-avatar 
-            v-if="row.avatar" 
-            :src="row.avatar" 
+            v-if="row.image || row.avatar" 
+            :src="row.image || row.avatar" 
             :size="32"
             shape="circle"
           />
@@ -63,36 +63,22 @@
         </div>
       </template>
 
-      <!-- Status Column -->
-      <template #status="{ row }">
-        <ClickableStatusTag
-          :status="row.status"
-          :status-options="statusOptions"
-          :loading="userStore.loading"
-          @status-change="() => toggleUserStatus(row.id)"
-        />
-      </template>
 
       <!-- Actions Column -->
       <template #actions="{ row }">
-        <div class="flex gap-2">
-          <el-button 
-            type="primary" 
-            size="small" 
-            @click="openEditDialog(row)"
-            :loading="userStore.loading"
-          >
-            <el-icon><Edit /></el-icon>
-          </el-button>
-          <el-button 
-            type="danger" 
-            size="small" 
-            @click="confirmDeleteUser(row)"
-            :loading="userStore.loading"
-          >
-            <el-icon><Delete /></el-icon>
-          </el-button>
-        </div>
+        <ActionButtons
+          :item="row"
+          :show-edit="true"
+          :show-delete="true"
+          :show-status="true"
+          edit-text=""
+          delete-text=""
+          status-disable-text=""
+          status-enable-text=""
+          @edit="openEditDialog"
+          @delete="handleDelete"
+          @toggleStatus="toggleUserStatus"
+        />
       </template>
     </DataTable>
 
@@ -142,9 +128,9 @@
           >
             <el-option
               v-for="option in countryCodes"
-              :key="option.value"
+              :key="option.dial"
               :label="option.label"
-              :value="option.value"
+              :value="option.dial"
             />
           </el-select>
           <el-input
@@ -212,7 +198,7 @@
       @submit="handleEditUser"
       @close="resetEditForm"
     >
-      <!-- Custom Avatar Upload Field -->
+      <!-- Custom Avat  ذar Upload Field -->
       <template #avatar>
         <el-upload
           class="avatar-uploader"
@@ -221,8 +207,8 @@
           accept="image/png,image/jpeg"
         >
           <el-avatar 
-            v-if="editFormData.avatarPreview || editingUser?.avatar" 
-            :src="editFormData.avatarPreview || editingUser?.avatar" 
+            v-if="editFormData.avatarPreview || editingUser?.image || editingUser?.avatar" 
+            :src="editFormData.avatarPreview || editingUser?.image || editingUser?.avatar" 
             :size="80"
             shape="circle"
           />
@@ -247,9 +233,9 @@
           >
             <el-option
               v-for="option in countryCodes"
-              :key="option.value"
+              :key="option.dial"
               :label="option.label"
-              :value="option.value"
+              :value="option.dial"
             />
           </el-select>
           <el-input
@@ -279,26 +265,81 @@
         </el-select>
       </template>
     </FormDialog>
+
+    <!-- Confirm Modal -->
+    <ConfirmModal
+      v-model="showConfirmModal"
+      :title="confirmModalData?.title || ''"
+      :message="confirmModalData?.message || ''"
+      confirm-text="Delete"
+      cancel-text="Cancel"
+      @confirm="handleConfirm"
+      @cancel="handleCancel"
+    />
+
+    <!-- Deactivation Reason Modal -->
+    <el-dialog
+      v-model="showDeactivationModal"
+      :title="t('users.deactivation.title')"
+      width="500px"
+      :close-on-click-modal="false"
+      :close-on-press-escape="false"
+    >
+      <div class="deactivation-modal-content">
+        <p class="mb-4">{{ t('users.deactivation.message', { name: userToDeactivate?.name }) }}</p>
+        
+        <el-form>
+          <el-form-item :label="t('users.deactivation.reasonLabel')" required>
+            <el-input
+              v-model="deactivationReason"
+              type="textarea"
+              :rows="4"
+              :placeholder="t('users.deactivation.reasonPlaceholder')"
+              maxlength="500"
+              show-word-limit
+            />
+          </el-form-item>
+        </el-form>
+      </div>
+      
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="showDeactivationModal = false">
+            {{ t('common.cancel') }}
+          </el-button>
+          <el-button 
+            type="danger" 
+            @click="handleDeactivation"
+            :disabled="!deactivationReason.trim()"
+          >
+            {{ t('users.deactivation.confirm') }}
+          </el-button>
+        </div>
+      </template>
+    </el-dialog>
     </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { ElMessageBox } from 'element-plus'
-import { Edit, Delete, RefreshRight, Plus } from '@element-plus/icons-vue'
+import { RefreshRight, Plus } from '@element-plus/icons-vue'
 import { useI18n } from 'vue-i18n'
 import PageHeader from '@/components/PageHeader.vue'
 import DataTable from '@/components/DataTable.vue'
-import ClickableStatusTag from '@/components/ClickableStatusTag.vue'
 import FormDialog from '@/components/FormDialog.vue'
 import SearchInput from '@/components/SearchInput.vue'
-import StatusFilter from '@/components/StatusFilter.vue'
+import ConfirmModal from '@/components/ConfirmModal.vue'
+import ActionButtons from '@/components/ActionButtons.vue'
+import { createRules } from '@/utils/validation'
 import { useUserStore, type User, type UserFormData } from '@/stores/user'
 import { useRolesStore } from '@/stores/roles'
+import { useCountriesStore } from '@/stores/countries'
 
 // Store
 const userStore = useUserStore()
 const rolesStore = useRolesStore()
+const countriesStore = useCountriesStore()
 const { t } = useI18n()
 
 // Reactive state
@@ -306,7 +347,14 @@ const searchQuery = ref('')
 const statusFilter = ref('')
 const showAddDialog = ref(false)
 const showEditDialog = ref(false)
+const showConfirmModal = ref(false)
+const confirmModalData = ref<{ title: string, message: string, action: () => void } | null>(null)
 const editingUser = ref<User | null>(null)
+
+// Deactivation reason modal
+const showDeactivationModal = ref(false)
+const deactivationReason = ref('')
+const userToDeactivate = ref<User | null>(null)
 
 // Form data
 const addFormData = ref<UserFormData & { 
@@ -324,7 +372,6 @@ const addFormData = ref<UserFormData & {
   avatar: null,
   avatarPreview: '',
   role: '',
-  status: undefined
 })
 
 const editFormData = ref<Partial<UserFormData & { 
@@ -339,56 +386,16 @@ const statusOptions = computed(() => [
   { label: t('users.status.inactive'), value: 'inactive' }
 ])
 
-// Role options from roles store
+// Role options from roles store (API roles have no status; show all)
 const roleOptions = computed(() => 
-  rolesStore.activeRoles.map(role => ({
+  rolesStore.roles.map(role => ({
     label: role.name,
     value: role.id
   }))
 )
 
-// Country codes options
-const countryCodes = [
-  { label: '🇸🇦  (+966)', value: '+966' },
-  { label: '🇪🇬  (+20)', value: '+20' },
-  { label: '🇦🇪  (+971)', value: '+971' },
-  { label: '🇰🇼  (+965)', value: '+965' },
-  { label: '🇶🇦  (+974)', value: '+974' },
-  { label: '🇧🇭  (+973)', value: '+973' },
-  { label: '🇴🇲  (+968)', value: '+968' },
-  { label: '🇯🇴  (+962)', value: '+962' },
-  { label: '🇱🇧  (+961)', value: '+961' },
-  { label: '🇸🇾  (+963)', value: '+963' },
-  { label: '🇮🇶  (+964)', value: '+964' },
-  { label: '🇾🇪  (+967)', value: '+967' },
-  { label: '🇵🇸  (+970)', value: '+970' },
-  { label: '🇺🇸  (+1)', value: '+1' },
-  { label: '🇬🇧  (+44)', value: '+44' },
-  { label: '🇫🇷  (+33)', value: '+33' },
-  { label: '🇩🇪  (+49)', value: '+49' },
-  { label: '🇮🇹  (+39)', value: '+39' },
-  { label: '🇪🇸  (+34)', value: '+34' },
-  { label: '🇨🇦  (+1)', value: '+1' },
-  { label: '🇦🇺  (+61)', value: '+61' },
-  { label: '🇯🇵  (+81)', value: '+81' },
-  { label: '🇨🇳  (+86)', value: '+86' },
-  { label: '🇮🇳  (+91)', value: '+91' },
-  { label: '🇧🇷  (+55)', value: '+55' },
-  { label: '🇷🇺  (+7)', value: '+7' },
-  { label: '🇿🇦  (+27)', value: '+27' },
-  { label: '🇳🇬  (+234)', value: '+234' },
-  { label: '🇰🇪  (+254)', value: '+254' },
-  { label: '🇲🇦  (+212)', value: '+212' },
-  { label: '🇹🇳  (+216)', value: '+216' },
-  { label: '🇩🇿  (+213)', value: '+213' },
-  { label: '🇱🇾  (+218)', value: '+218' },
-  { label: '🇸🇩  (+249)', value: '+249' },
-  { label: '🇪🇹  (+251)', value: '+251' },
-  { label: '🇹🇷  (+90)', value: '+90' },
-  { label: '🇮🇷  (+98)', value: '+98' },
-  { label: '🇵🇰  (+92)', value: '+92' },
-  { label: '🇦🇫  (+93)', value: '+93' }
-]
+// Country codes from store (label like EGY+20, dial like +20, iso, iso3)
+const countryCodes = computed(() => countriesStore.options)
 
 // Table columns configuration
 const tableColumns = computed(() => [
@@ -396,9 +403,7 @@ const tableColumns = computed(() => [
   { prop: 'name', label: t('users.table.name'), width: '150' },
   { prop: 'email', label: t('users.table.email'), width: '200' },
   { prop: 'phone', label: t('users.table.phone'), width: '150', slot: 'phone' },
-  { prop: 'role', label: t('users.table.role'), width: '100' },
-  { prop: 'status', label: t('users.table.status'), width: '120', slot: 'status' },
-  { prop: 'createdAt', label: t('users.table.createdAt'), width: '120' }
+  { prop: 'role', label: t('users.table.role'), width: '100', formatter: (row: any) => row.role?.name || '' }
 ])
 
 // Form fields configuration
@@ -451,13 +456,6 @@ const addFormFields = computed(() => [
     type: 'select',
     options: roleOptions.value,
     placeholder: t('users.form.placeholders.role')
-  },
-  {
-    prop: 'status',
-    label: t('users.form.status'),
-    type: 'select',
-    options: statusOptions.value,
-    placeholder: t('users.form.placeholders.status')
   }
 ])
 
@@ -498,232 +496,24 @@ const editFormFields = computed(() => [
     type: 'select',
     options: roleOptions.value,
     placeholder: t('users.form.placeholders.role')
-  },
-  {
-    prop: 'status',
-    label: t('users.form.status'),
-    type: 'select',
-    options: statusOptions.value,
-    placeholder: t('users.form.placeholders.status')
   }
 ])
 
-// Validation functions
-const validateName = (_rule: any, value: string, callback: Function) => {
-  if (!value) {
-    callback(new Error(t('users.validation.name.required')))
-    return
-  }
-  
-  if (value.length < 2) {
-    callback(new Error(t('users.validation.name.minLength')))
-    return
-  }
-  
-  if (value.length > 100) {
-    callback(new Error(t('users.validation.name.maxLength')))
-    return
-  }
-  
-  // Check if contains only letters and numbers
-  if (!/^[a-zA-Z0-9\u0600-\u06FF\s]+$/.test(value)) {
-    callback(new Error(t('users.validation.name.invalid')))
-    return
-  }
-  
-  callback()
-}
-
-const validateEmail = (_rule: any, value: string, callback: Function) => {
-  if (!value) {
-    callback(new Error(t('users.validation.email.required')))
-    return
-  }
-  
-  if (value.length > 100) {
-    callback(new Error(t('users.validation.email.maxLength')))
-    return
-  }
-  
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-  if (!emailRegex.test(value)) {
-    callback(new Error(t('users.validation.email.invalid')))
-    return
-  }
-  
-  // Check email uniqueness
-  const existingUser = userStore.users.find(user => 
-    user.email.toLowerCase() === value.toLowerCase() && 
-    user.id !== editingUser.value?.id
-  )
-  
-  if (existingUser) {
-    callback(new Error(t('users.validation.email.duplicate')))
-    return
-  }
-  
-  callback()
-}
-
-const validatePhoneNumber = (_rule: any, value: string, callback: Function) => {
-  if (!value) {
-    callback(new Error(t('users.validation.phone.required')))
-    return
-  }
-  
-  // Remove any non-digit characters
-  const cleanPhone = value.replace(/\D/g, '')
-  
-  // Check if phone number is valid (7-15 digits)
-  if (cleanPhone.length < 7 || cleanPhone.length > 15) {
-    callback(new Error(t('users.validation.phone.invalid')))
-    return
-  }
-  
-  // Check if it contains only digits
-  if (!/^\d+$/.test(cleanPhone)) {
-    callback(new Error(t('users.validation.phone.invalid')))
-    return
-  }
-  
-  callback()
-}
-
-const checkPhoneUniqueness = async (_rule: any, value: string, callback: Function) => {
-  if (!value) {
-    callback()
-    return
-  }
-  
-  try {
-    // Get the full phone number with country code
-    const countryCode = addFormData.value.countryCode || editFormData.value.countryCode || '+966'
-    const fullPhone = `${countryCode}${value.replace(/\D/g, '')}`
-    
-    // Check if phone already exists in the current users list
-    const existingUser = userStore.users.find(user => {
-      const userPhone = user.phone?.replace(/\D/g, '') || ''
-      const userCountryCode = user.phone?.match(/^\+\d+/)?.[0] || ''
-      const userFullPhone = userCountryCode + userPhone
-      return userFullPhone === fullPhone && user.id !== editingUser.value?.id
-    })
-    
-    if (existingUser) {
-      callback(new Error(t('users.validation.phone.duplicate')))
-      return
-    }
-    
-    callback()
-  } catch (error) {
-    callback()
-  }
-}
-
-const validatePassword = (_rule: any, value: string, callback: Function) => {
-  if (!value) {
-    callback(new Error(t('users.validation.password.required')))
-    return
-  }
-  
-  if (value.length < 8) {
-    callback(new Error(t('users.validation.password.minLength')))
-    return
-  }
-  
-  if (value.length > 25) {
-    callback(new Error(t('users.validation.password.maxLength')))
-    return
-  }
-  
-  // Check for uppercase, lowercase, number, and no spaces
-  const hasUppercase = /[A-Z]/.test(value)
-  const hasLowercase = /[a-z]/.test(value)
-  const hasNumber = /\d/.test(value)
-  const hasSpaces = /\s/.test(value)
-  
-  if (!hasUppercase || !hasLowercase || !hasNumber || hasSpaces) {
-    callback(new Error(t('users.validation.password.pattern')))
-    return
-  }
-  
-  callback()
-}
-
-const validateConfirmPassword = (_rule: any, value: string, callback: Function) => {
-  if (!value) {
-    callback(new Error(t('users.validation.confirmPassword.required')))
-    return
-  }
-  
-  if (value !== addFormData.value.password) {
-    callback(new Error(t('users.validation.confirmPassword.mismatch')))
-    return
-  }
-  
-  callback()
-}
-
-const validateRole = (_rule: any, value: string, callback: Function) => {
-  if (!value) {
-    callback(new Error(t('users.validation.role.required')))
-    return
-  }
-  
-  callback()
-}
-
-const validateStatus = (_rule: any, value: string, callback: Function) => {
-  if (!value) {
-    callback(new Error(t('users.validation.status.required')))
-    return
-  }
-  
-  callback()
-}
-
 // Form validation rules
 const formRules = computed(() => ({
-  name: [
-    { validator: validateName, trigger: 'blur' }
-  ],
-  email: [
-    { validator: validateEmail, trigger: 'blur' }
-  ],
-  phone: [
-    { validator: validatePhoneNumber, trigger: 'blur' },
-    { validator: checkPhoneUniqueness, trigger: 'blur' }
-  ],
-  password: [
-    { validator: validatePassword, trigger: 'blur' }
-  ],
-  confirmPassword: [
-    { validator: validateConfirmPassword, trigger: 'blur' }
-  ],
-  role: [
-    { validator: validateRole, trigger: 'change' }
-  ],
-  status: [
-    { validator: validateStatus, trigger: 'change' }
-  ]
+  name: createRules.name(),
+  email: createRules.email(),
+  phone: createRules.phone(),
+  password: createRules.password(),
+  confirmPassword: createRules.confirmPassword(() => addFormData.value.password || ''),
+  role: createRules.role()
 }))
 
 const editFormRules = computed(() => ({
-  name: [
-    { validator: validateName, trigger: 'blur' }
-  ],
-  email: [
-    { validator: validateEmail, trigger: 'blur' }
-  ],
-  phone: [
-    { validator: validatePhoneNumber, trigger: 'blur' },
-    { validator: checkPhoneUniqueness, trigger: 'blur' }
-  ],
-  role: [
-    { validator: validateRole, trigger: 'change' }
-  ],
-  status: [
-    { validator: validateStatus, trigger: 'change' }
-  ]
+  name: createRules.name(),
+  email: createRules.email(),
+  phone: createRules.phone(),
+  role: createRules.role()
 }))
 
 // Computed properties
@@ -747,20 +537,60 @@ const openAddDialog = () => {
 }
 
 const openEditDialog = (user: User) => {
+  console.log("userData" , user)
   editingUser.value = user
   
-  // Extract country code and phone number
-  const phoneMatch = user.phone?.match(/^(\+\d+)(.*)$/)
-  const countryCode = phoneMatch ? phoneMatch[1] : '+966'
-  const phoneNumber = phoneMatch ? phoneMatch[2] : user.phone || ''
+  // Extract country code and phone number using the same logic as MyAccount
+  // This handles multiple phone number formats that might come from the API
+  const raw = (user.phone || "").toString().trim();
+  let countryCode = "+966"; // Default to Saudi Arabia
+  let phoneNumber = "";
   
+  if (raw) {
+    // Get all available country codes from the store
+    const codes = countryCodes.value.map((c) => c.dial); // with '+'
+    
+    // Case 1: Phone starts with +code (e.g., "+966512345678")
+    const codeMatch = codes.find((c) => raw.startsWith(c));
+    if (codeMatch) {
+      countryCode = codeMatch;
+      phoneNumber = raw.slice(codeMatch.length);
+    } else {
+      // Case 2: Phone starts with code digits without '+' (e.g., "966512345678")
+      const codesNoPlus = codes.map((c) => c.replace("+", ""));
+      const found = codesNoPlus.find((c) => raw.startsWith(c));
+      if (found) {
+        countryCode = `+${found}`;
+        phoneNumber = raw.slice(found.length);
+      } else {
+        // Case 3: Pattern like ISO3+phone_code prefixed (e.g., "SAU+966512345678")
+        const foundIso3 = countryCodes.value.find((c) =>
+          raw.startsWith(`${c.iso3}+${c.dial.replace("+", "")}`)
+        );
+        if (foundIso3) {
+          countryCode = foundIso3.dial;
+          phoneNumber = raw.slice(
+            (foundIso3.iso3 + "+" + foundIso3.dial.replace("+", "")).length
+          );
+        } else {
+          // Fallback: keep default code and put all digits in phone
+          countryCode = "+966";
+          phoneNumber = raw;
+        }
+      }
+    }
+  }
+  
+  // Populate the edit form with extracted data
   editFormData.value = {
     name: user.name,
     email: user.email,
     phone: phoneNumber,
     countryCode: countryCode,
-    role: user.role,
-    status: user.status
+        role: user.role.name,
+    avatar: null,
+    avatarPreview: user.image || user.avatar || ''
+    
   }
   showEditDialog.value = true
 }
@@ -828,16 +658,30 @@ const handleEditAvatarUpload = (file: File) => {
 const handleAddUser = async (formData: Record<string, any>) => {
   try {
     // Combine country code with phone number
-    const userData: UserFormData = {
-      name: formData.name,
-      email: formData.email,
-      phone: `${formData.countryCode}${formData.phone}`,
-      password: formData.password,
-      role: formData.role,
-      status: formData.status
+    const selectedCode = countryCodes.value.find(c => c.dial === formData.countryCode)
+    const roleObj = rolesStore.roles.find(r => r.id === formData.role)
+    
+    // Create FormData for file upload
+    const userFormData = new FormData()
+    userFormData.append('name', formData.name)
+    userFormData.append('email', formData.email)
+    userFormData.append('phone', `${formData.countryCode}${formData.phone}`)
+    userFormData.append('password', formData.password)
+    userFormData.append('password_confirmation', formData.confirmPassword)
+    
+    if (selectedCode?.iso) {
+      userFormData.append('country_code', selectedCode.iso)
     }
     
-    await userStore.addUser(userData)
+    if (roleObj?.name) {
+      userFormData.append('role_name', roleObj.name)
+    }
+    
+    if (addFormData.value.avatar) {
+      userFormData.append('image', addFormData.value.avatar)
+    }
+    
+    await userStore.addUser(userFormData)
     showAddDialog.value = false
     resetAddForm()
   } catch (error) {
@@ -849,16 +693,43 @@ const handleEditUser = async (formData: Record<string, any>) => {
   if (!editingUser.value) return
   
   try {
+    // Use editFormData.value as fallback if formData is missing values
+    const name = formData.name || editFormData.value.name
+    const email = formData.email || editFormData.value.email
+    const phone = formData.phone || editFormData.value.phone
+    const countryCode = formData.countryCode || editFormData.value.countryCode
+    const role = formData.role || editFormData.value.role
+    
     // Combine country code with phone number
-    const userData: Partial<UserFormData> = {
-      name: formData.name,
-      email: formData.email,
-      phone: `${formData.countryCode}${formData.phone}`,
-      role: formData.role,
-      status: formData.status
+    const selectedCode = countryCodes.value.find(c => c.dial === countryCode)
+    const roleObj = rolesStore.roles.find(r => r.name === role)
+    
+    console.log('role from formData:', role)
+    console.log('roleObj found:', roleObj)
+    console.log('editingUser.role:', editingUser.value.role)
+    
+    // Create FormData for file upload
+    const userFormData = new FormData()
+    userFormData.append('name', name)
+    userFormData.append('email', email)
+    userFormData.append('phone', `${countryCode}${phone}`)
+    
+    if (selectedCode?.iso) {
+      userFormData.append('country_code', selectedCode.iso)
     }
     
-    await userStore.updateUser(editingUser.value.id, userData)
+    if (roleObj?.name) {
+      userFormData.append('role_name', roleObj.name)
+    } else {
+      // Fallback: use the role name from the original user data or formData
+      userFormData.append('role_name', editingUser.value.role.name || role)
+    }
+    
+    if (editFormData.value.avatar) {
+      userFormData.append('image', editFormData.value.avatar)
+    }
+    
+    await userStore.updateUser(editingUser.value.id, userFormData)
     showEditDialog.value = false
     resetEditForm()
   } catch (error) {
@@ -866,33 +737,59 @@ const handleEditUser = async (formData: Record<string, any>) => {
   }
 }
 
-const toggleUserStatus = async (userId: string | number) => {
+const toggleUserStatus = async (user: User) => {
   try {
-    await userStore.toggleUserStatus(userId)
+    // If user is active (is_active === 1) and we're trying to deactivate, show reason modal
+    if (user.is_active === 1) {
+      userToDeactivate.value = user
+      deactivationReason.value = ''
+      showDeactivationModal.value = true
+      return
+    }
+    
+    // If user is inactive (is_active === 0), activate directly without reason
+    await userStore.toggleUserStatus(user.id)
   } catch (error) {
     // Error handling is done in the store
   }
 }
 
-const confirmDeleteUser = async (user: User) => {
-  try {
-    await ElMessageBox.confirm(
-      t('users.messages.deleteConfirm.message', { name: user.name }),
-      t('users.messages.deleteConfirm.title'),
-      {
-        confirmButtonText: t('users.messages.deleteConfirm.confirmButton'),
-        cancelButtonText: t('users.messages.deleteConfirm.cancelButton'),
-        type: 'warning',
-        confirmButtonClass: 'el-button--danger'
-      }
-    )
-    
-    await userStore.deleteUser(user.id)
-  } catch (error) {
-    if (error !== 'cancel') {
-      // Error handling is done in the store
-    }
+// Handle deactivation with reason
+const handleDeactivation = async () => {
+  if (!userToDeactivate.value || !deactivationReason.value.trim()) {
+    return
   }
+  
+  try {
+    await userStore.toggleUserStatus(userToDeactivate.value.id, deactivationReason.value.trim())
+    showDeactivationModal.value = false
+    deactivationReason.value = ''
+    userToDeactivate.value = null
+  } catch (error) {
+    // Error handling is done in the store
+  }
+}
+
+const handleDelete = (user: User) => {
+  confirmModalData.value = {
+    title: t('users.messages.deleteConfirm.title'),
+    message: t('users.messages.deleteConfirm.message', { name: user.name }),
+    action: () => userStore.deleteUser(user.id)
+  }
+  showConfirmModal.value = true
+}
+
+const handleConfirm = () => {
+  if (confirmModalData.value) {
+    confirmModalData.value.action()
+    showConfirmModal.value = false
+    confirmModalData.value = null
+  }
+}
+
+const handleCancel = () => {
+  showConfirmModal.value = false
+  confirmModalData.value = null
 }
 
 const resetAddForm = () => {
@@ -906,7 +803,6 @@ const resetAddForm = () => {
     avatar: null,
     avatarPreview: '',
     role: '',
-    status: undefined
   }
 }
 
@@ -924,6 +820,7 @@ const clearFilters = () => {
 onMounted(() => {
   userStore.fetchUsers()
   rolesStore.fetchRoles()
+  countriesStore.fetchCountries()
 })
 </script>
 

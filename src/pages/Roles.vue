@@ -8,17 +8,12 @@
       @add="openAddDialog"
     />
     
-    <!-- Search and Filters -->
+    <!-- Search -->
     <div class="mb-4 flex gap-4 items-center">
       <SearchInput 
         v-model="searchQuery"
         :placeholder="$t('roles.searchPlaceholder')"
         class="flex-1"
-      />
-      <StatusFilter 
-        v-model="statusFilter"
-        :options="statusOptions"
-        :placeholder="$t('roles.filterPlaceholder')"
       />
       <el-button 
         v-if="hasActiveFilters"
@@ -36,46 +31,34 @@
       :columns="tableColumns"
       :loading="rolesStore.loading"
       :empty-message="$t('roles.table.emptyMessage')"
+      :actions-min-width="220"
+      :actions-label="$t('roles.table.availableOperations')"
     >
-      <!-- Status Column -->
-      <template #status="{ row }">
-        <ClickableStatusTag
-          :status="row.status"
-          :status-options="statusOptions"
-          :loading="rolesStore.loading"
-          @status-change="() => toggleRoleStatus(row)"
-        />
-      </template>
-
-      <!-- Actions Column -->
-      <template #actions="{ row }">
-        <div class="flex gap-2">
-          <el-button 
-            type="info" 
-            size="small" 
-            @click="viewRole(row)"
-            :loading="rolesStore.loading"
+      <template #permissions="{ row }">
+        <div class="flex flex-wrap gap-2">
+          <el-tag
+            v-for="permission in mapRolePermissionNames(row.permissions).slice(0, 5)"
+            :key="permission"
+            type="info"
           >
-            <el-icon><View /></el-icon>
-          </el-button>
-          <el-button 
-            type="primary" 
-            size="small" 
-            @click="openEditDialog(row)"
-            :loading="rolesStore.loading"
-          >
-            <el-icon><Edit /></el-icon>
-          </el-button>
-          <el-button 
-            v-if="!row.isSystemRole"
-            type="danger" 
-            size="small" 
-            @click="confirmDeleteRole(row)"
-            :loading="rolesStore.loading"
-          >
-            <el-icon><Delete /></el-icon>
-          </el-button>
+            {{ permission }}
+          </el-tag>
+          <el-tag v-if="mapRolePermissionNames(row.permissions).length > 5" type="warning">
+            +{{ mapRolePermissionNames(row.permissions).length - 5 }}
+          </el-tag>
         </div>
+      </template>
+      <template #actions="{ row }">
+        <ActionButtons
+          :item="row"
+          :show-view="true"
+          :show-edit="true"
+          :show-delete="true"
+          :show-status="false"
+          @view="viewRole"
+          @edit="openEditDialog"
+          @delete="handleDelete"
+        />
       </template>
     </DataTable>
 
@@ -91,20 +74,27 @@
       @close="resetAddForm"
     >
       <!-- Custom Permissions Field -->
-      <template #permissions="{ value, updateValue }">
+      <template #permission="{ value, updateValue }">
         <el-select
           :model-value="value"
           @update:model-value="updateValue"
           multiple
           :placeholder="$t('roles.form.placeholders.permissions')"
           class="w-full"
+          filterable
         >
-          <el-option
-            v-for="permission in rolesStore.availablePermissions"
-            :key="permission"
-            :label="permission"
-            :value="permission"
-          />
+          <el-option-group
+            v-for="(group, key) in permissionsStore.groups"
+            :key="key"
+            :label="group.title"
+          >
+            <el-option
+              v-for="p in group.permissions"
+              :key="p.name"
+              :label="p.name"
+              :value="p.name"
+            />
+          </el-option-group>
         </el-select>
       </template>
     </FormDialog>
@@ -121,20 +111,27 @@
       @close="resetEditForm"
     >
       <!-- Custom Permissions Field -->
-      <template #permissions="{ value, updateValue }">
+      <template #permission="{ value, updateValue }">
         <el-select
           :model-value="value"
           @update:model-value="updateValue"
           multiple
           :placeholder="$t('roles.form.placeholders.permissions')"
           class="w-full"
+          filterable
         >
-          <el-option
-            v-for="permission in rolesStore.availablePermissions"
-            :key="permission"
-            :label="permission"
-            :value="permission"
-          />
+          <el-option-group
+            v-for="(group, key) in permissionsStore.groups"
+            :key="key"
+            :label="group.title"
+          >
+            <el-option
+              v-for="p in group.permissions"
+              :key="p.name"
+              :label="p.name"
+              :value="p.name"
+            />
+          </el-option-group>
         </el-select>
       </template>
     </FormDialog>
@@ -155,33 +152,17 @@
         
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">
-            {{ $t('roles.form.status') }}
-          </label>
-          <el-tag :type="viewingRole.status === 'active' ? 'success' : 'danger'">
-            {{ $t(`roles.status.${viewingRole.status}`) }}
-          </el-tag>
-        </div>
-        
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">
             {{ $t('roles.form.permissions') }}
           </label>
           <div class="flex flex-wrap gap-2">
             <el-tag
-              v-for="permission in viewingRole.permissions"
+              v-for="permission in viewingRolePermissionNames"
               :key="permission"
               type="info"
             >
-              {{ $t(`roles.permissions.${permission}`) }}
+              {{ permission }}
             </el-tag>
           </div>
-        </div>
-        
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">
-            {{ $t('roles.table.createdAt') }}
-          </label>
-          <p class="text-gray-900">{{ formatDate(viewingRole.createdAt) }}</p>
         </div>
       </div>
       
@@ -191,57 +172,62 @@
         </el-button>
       </template>
     </el-dialog>
+
+    <!-- Confirm Modal -->
+    <ConfirmModal
+      v-model="showConfirmModal"
+      :title="confirmModalData?.title || ''"
+      :message="confirmModalData?.message || ''"
+      :confirm-text="$t('users.form.buttons.delete')"
+      :cancel-text="$t('users.form.buttons.cancel')"
+      @confirm="handleConfirm"
+      @cancel="handleCancel"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { ElMessageBox } from 'element-plus'
-import { Edit, Delete, RefreshRight, View } from '@element-plus/icons-vue'
+import { RefreshRight } from '@element-plus/icons-vue'
 import { useI18n } from 'vue-i18n'
+import ActionButtons from '@/components/ActionButtons.vue'
+import ConfirmModal from '@/components/ConfirmModal.vue'
 import PageHeader from '@/components/PageHeader.vue'
 import DataTable from '@/components/DataTable.vue'
-import ClickableStatusTag from '@/components/ClickableStatusTag.vue'
 import FormDialog from '@/components/FormDialog.vue'
 import SearchInput from '@/components/SearchInput.vue'
-import StatusFilter from '@/components/StatusFilter.vue'
+import { createRules } from '@/utils/validation'
 import { useRolesStore, type Role, type RoleFormData } from '@/stores/roles'
+import { usePermissionsStore } from '@/stores/permissions'
 
 // Store
 const rolesStore = useRolesStore()
+const permissionsStore = usePermissionsStore()
 const { t } = useI18n()
 
 // Reactive state
 const searchQuery = ref('')
-const statusFilter = ref('')
 const showAddDialog = ref(false)
 const showEditDialog = ref(false)
 const showViewDialog = ref(false)
+const showConfirmModal = ref(false)
+const confirmModalData = ref<{ title: string, message: string, action: () => void } | null>(null)
 const editingRole = ref<Role | null>(null)
 const viewingRole = ref<Role | null>(null)
 
 // Form data
 const addFormData = ref<RoleFormData>({
   name: '',
-  permissions: [],
-  status: undefined
+  permission: []
 })
 
 const editFormData = ref<Partial<RoleFormData>>({})
-
-// Status options
-const statusOptions = computed(() => [
-  { label: t('roles.status.active'), value: 'active' },
-  { label: t('roles.status.inactive'), value: 'inactive' }
-])
 
 // Table columns configuration
 const tableColumns = computed(() => [
   { prop: 'id', label: '#', width: '60' },
   { prop: 'name', label: t('roles.table.roleName'), width: '200' },
-  { prop: 'status', label: t('roles.table.status'), width: '120', slot: 'status' },
-  { prop: 'createdAt', label: t('roles.table.createdAt'), width: '150' },
-  { prop: 'actions', label: t('roles.table.actions'), width: '200', slot: 'actions' }
+  { prop: 'permissions', label: t('roles.table.permissions'), minWidth: '300', slot: 'permissions' }
 ])
 
 // Form fields configuration
@@ -256,17 +242,10 @@ const addFormFields = computed(() => [
     showWordLimit: true
   },
   {
-    prop: 'permissions',
+    prop: 'permission',
     label: t('roles.form.permissions'),
     type: 'slot',
     required: true
-  },
-  {
-    prop: 'status',
-    label: t('roles.form.status'),
-    type: 'select',
-    options: statusOptions.value,
-    placeholder: t('roles.form.placeholders.status')
   }
 ])
 
@@ -281,98 +260,31 @@ const editFormFields = computed(() => [
     showWordLimit: true
   },
   {
-    prop: 'permissions',
+    prop: 'permission',
     label: t('roles.form.permissions'),
     type: 'slot',
     required: true
-  },
-  {
-    prop: 'status',
-    label: t('roles.form.status'),
-    type: 'select',
-    options: statusOptions.value,
-    placeholder: t('roles.form.placeholders.status')
   }
 ])
 
-// Validation functions
-const validateRoleName = (_rule: any, value: string, callback: Function) => {
-  if (!value) {
-    callback(new Error(t('roles.validation.name.required')))
-    return
-  }
-  
-  if (value.length < 2) {
-    callback(new Error(t('roles.validation.name.minLength')))
-    return
-  }
-  
-  if (value.length > 100) {
-    callback(new Error(t('roles.validation.name.maxLength')))
-    return
-  }
-  
-  // Check if contains only letters
-  if (!/^[a-zA-Z\u0600-\u06FF\s]+$/.test(value)) {
-    callback(new Error(t('roles.validation.name.invalid')))
-    return
-  }
-  
-  // Check role name uniqueness
-  const existingRole = rolesStore.roles.find(role => 
-    role.name.toLowerCase() === value.toLowerCase() && 
-    role.id !== editingRole.value?.id
-  )
-  
-  if (existingRole) {
-    callback(new Error(t('roles.validation.name.duplicate')))
-    return
-  }
-  
-  callback()
-}
-
-const validatePermissions = (_rule: any, value: string[], callback: Function) => {
-  if (!value || value.length === 0) {
-    callback(new Error(t('roles.validation.permissions.required')))
-    return
-  }
-  
-  callback()
-}
-
 // Form validation rules
 const formRules = computed(() => ({
-  name: [
-    { validator: validateRoleName, trigger: 'blur' }
-  ],
-  permissions: [
-    { validator: validatePermissions, trigger: 'blur' }
-  ]
+  name: createRules.roleName(),
+  permission: createRules.permissions()
 }))
 
 const editFormRules = computed(() => ({
-  name: [
-    { validator: validateRoleName, trigger: 'blur' }
-  ],
-  permissions: [
-    { validator: validatePermissions, trigger: 'change' }
-  ]
+  name: createRules.roleName(),
+  permission: createRules.permissions()
 }))
 
 // Computed properties
 const filteredRoles = computed(() => {
-  let filtered = rolesStore.searchRoles(searchQuery.value)
-  
-  if (statusFilter.value) {
-    filtered = rolesStore.filterRolesByStatus(statusFilter.value)
-  }
-  
-  return filtered
+  return rolesStore.searchRoles(searchQuery.value)
 })
 
 const hasActiveFilters = computed(() => {
-  return searchQuery.value.trim() !== '' || statusFilter.value !== ''
+  return searchQuery.value.trim() !== ''
 })
 
 // Methods
@@ -382,10 +294,12 @@ const openAddDialog = () => {
 
 const openEditDialog = (role: Role) => {
   editingRole.value = role
+  const perms = Array.isArray(role.permissions)
+    ? mapRolePermissionNames(role.permissions)
+    : []
   editFormData.value = {
     name: role.name,
-    permissions: role.permissions,
-    status: role.status
+    permission: perms
   }
   showEditDialog.value = true
 }
@@ -395,12 +309,35 @@ const viewRole = (role: Role) => {
   showViewDialog.value = true
 }
 
+const handleDelete = (role: Role) => {
+  confirmModalData.value = {
+    title: t('roles.messages.deleteConfirm.title') as string,
+    message: t('roles.messages.deleteConfirm.message', { name: role.name }) as string,
+    action: async () => {
+      await rolesStore.deleteRole(role.id)
+    }
+  }
+  showConfirmModal.value = true
+}
+
+const handleConfirm = async () => {
+  if (confirmModalData.value) {
+    await confirmModalData.value.action()
+    showConfirmModal.value = false
+    confirmModalData.value = null
+  }
+}
+
+const handleCancel = () => {
+  showConfirmModal.value = false
+  confirmModalData.value = null
+}
+
 const handleAddRole = async (formData: Record<string, any>) => {
   try {
     const roleData: RoleFormData = {
       name: formData.name,
-      permissions: formData.permissions,
-      status: formData.status
+      permission: formData.permission
     }
     
     await rolesStore.addRole(roleData)
@@ -415,10 +352,9 @@ const handleEditRole = async (formData: Record<string, any>) => {
   if (!editingRole.value) return
   
   try {
-    const roleData: Partial<RoleFormData> = {
+    const roleData: Record<string, any> = {
       name: formData.name,
-      permissions: formData.permissions,
-      status: formData.status
+      permission: formData.permission
     }
     
     await rolesStore.updateRole(editingRole.value.id, roleData)
@@ -429,74 +365,10 @@ const handleEditRole = async (formData: Record<string, any>) => {
   }
 }
 
-const toggleRoleStatus = async (role: Role) => {
-  try {
-    if (role.isSystemRole) {
-      // Special handling for system roles
-      const message = role.status === 'active' 
-        ? t('roles.messages.disableSystemRole.confirm')
-        : t('roles.messages.enableRole.confirm')
-      
-      await ElMessageBox.confirm(
-        message,
-        t('roles.messages.disableSystemRole.title'),
-        {
-          confirmButtonText: t('roles.messages.disableSystemRole.confirmButton'),
-          cancelButtonText: t('roles.messages.disableSystemRole.cancelButton'),
-          type: 'warning'
-        }
-      )
-    } else {
-      // Regular role toggle
-      const message = role.status === 'active' 
-        ? t('roles.messages.disableRole.confirm')
-        : t('roles.messages.enableRole.confirm')
-      
-      await ElMessageBox.confirm(
-        message,
-        t('roles.messages.disableRole.title'),
-        {
-          confirmButtonText: t('roles.messages.disableRole.confirmButton'),
-          cancelButtonText: t('roles.messages.disableRole.cancelButton'),
-          type: 'warning'
-        }
-      )
-    }
-    
-    await rolesStore.toggleRoleStatus(role.id)
-  } catch (error) {
-    if (error !== 'cancel') {
-      // Error handling is done in the store
-    }
-  }
-}
-
-const confirmDeleteRole = async (role: Role) => {
-  try {
-    await ElMessageBox.confirm(
-      t('roles.messages.deleteConfirm.message', { name: role.name }),
-      t('roles.messages.deleteConfirm.title'),
-      {
-        confirmButtonText: t('roles.messages.deleteConfirm.confirmButton'),
-        cancelButtonText: t('roles.messages.deleteConfirm.cancelButton'),
-        type: 'warning',
-        confirmButtonClass: 'el-button--danger'
-      }
-    )
-    
-    await rolesStore.deleteRole(role.id)
-  } catch (error) {
-    if (error !== 'cancel') {
-      // Error handling is done in the store
-    }
-  }
-}
-
 const resetAddForm = () => {
   addFormData.value = {
     name: '',
-    permissions: [],
-    status: undefined
+    permission: []
   }
 }
 
@@ -507,16 +379,25 @@ const resetEditForm = () => {
 
 const clearFilters = () => {
   searchQuery.value = ''
-  statusFilter.value = ''
 }
 
-const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleDateString()
+const mapRolePermissionNames = (perms: any[]): string[] => {
+  if (!Array.isArray(perms)) return []
+  return perms.map((p: any) => (typeof p === 'string' ? p : p?.name)).filter(Boolean)
 }
+
+const viewingRolePermissionNames = computed(() => {
+  return viewingRole.value ? mapRolePermissionNames(viewingRole.value.permissions as any) : []
+})
 
 // Lifecycle
 onMounted(() => {
   rolesStore.fetchRoles()
+})
+
+defineExpose({
+  openEditDialog,
+  viewRole
 })
 </script>
 

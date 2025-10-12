@@ -18,7 +18,13 @@
           </template>
         </el-table-column>
         
-        <el-table-column v-if="$slots.actions" label="Actions" width="120" >
+        <el-table-column 
+          v-if="$slots.actions" 
+          :label="actionsLabel" 
+          :width="actionsWidth" 
+          :min-width="actionsMinWidth"
+          :fixed="actionsFixed"
+        >
           <template #default="scope">
             <slot name="actions" :row="scope.row" :index="scope.$index" />
           </template>
@@ -41,8 +47,16 @@ withDefaults(defineProps<{
   columns: any[]
   loading?: boolean
   emptyMessage?: string
+  actionsLabel?: string | number
+  actionsWidth?: string | number
+  actionsMinWidth?: string | number
+  actionsFixed?: boolean | string
 }>(), {
   loading: false,
-  emptyMessage: 'No data found'
+  emptyMessage: 'No data found',
+  actionsLabel: 'Actions',
+  actionsWidth: undefined,
+  actionsMinWidth: 200,
+  actionsFixed: false
 })
 </script>

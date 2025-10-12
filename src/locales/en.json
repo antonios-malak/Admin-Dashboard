@@ -3,15 +3,7 @@
     "title": "Update Password",
     "password": "New Password",
     "confirmPassword": "Confirm New Password",
-    "button": "Update Password",
-    "validation": {
-      "password_required": "Please enter your new password",
-      "password_min": "Password must be at least 8 characters",
-        "password_max": "Password must be at most 25 characters",
-        "password_pattern": "Password must contain at least one uppercase letter, one lowercase letter, and one number",
-      "confirm_required": "Please confirm your new password",
-      "confirm_match": "Passwords do not match"
-    }
+    "button": "Update Password"
   },
   "otp": {
   "title": "OTP Verification",
@@ -23,12 +15,7 @@
   "forgot": {
     "title": "Forgot Password",
     "email": "Email",
-    "button": "Send Code",
-    "validation": {
-      "email_required": "Email is required",
-      "email_max": "Email must be at most 100 characters",
-      "email_invalid": "Invalid email format"
-    }
+    "button": "Send Code"
   }
   ,
   "login": {
@@ -36,16 +23,7 @@
     "email": "Email",
     "password": "Password",
     "button": "Login now",
-  "forgot": "Forgot password?",
-      "validation": {
-        "email_required": "Email is required",
-        "email_max": "Email must be at most 100 characters",
-        "email_invalid": "Invalid email format",
-        "password_required": "Password is required",
-        "password_min": "Password must be at least 8 characters",
-        "password_max": "Password must be at most 25 characters",
-        "password_pattern": "Password must contain at least one uppercase letter, one lowercase letter, and one number"
-      }
+  "forgot": "Forgot password?"
   },
   "appHeader": {
     "languages": {
@@ -62,9 +40,36 @@
       "dashboard": "Dashboard",
       "myAccount": "My Account",
       "notifications": "Notifications",
-      "users": "Users",
+      "userManagement": "Admins Management",
+      "users": "Admins",
       "roles": "Roles",
-      "permissions": "Permissions"
+      "permissions": "Permissions",
+      "autoConsultation": "Auto Consultation",
+      "emojis": "Emojis",
+      "medicalManagement": "Medical Management",
+      "doctors": "Doctors",
+      "specialities": "Medical Specialties",
+      "followUps": "Follow-ups",
+      "contentManagement": "Content Management",
+      "windingUpRequests": "Winding-up Requests",
+      "communityPosts": "Community Posts",
+      "advertisements": "Advertisements",
+      "exercises": "Exercises",
+      "appContent": "App Content",
+      "about": "About Us",
+      "terms": "Terms & Conditions",
+      "privacy": "Privacy Policy",
+      "settingsManagement": "Settings",
+      "settings": "Settings",
+      "contactUs": "Contact Messages",
+      "faqs": "FAQs",
+      "appPages": "App Pages",
+      "locationsManagement": "Locations Management",
+      "countries": "Countries",
+      "regions": "Regions",
+      "cities": "Cities",
+      "districts": "Districts",
+      "sliders": "Sliders"
     }
   },
   "dashboard": {
@@ -80,10 +85,17 @@
     "title": "My Account",
     "profileInformation": {
       "title": "Profile Information",
+      "userImage": "User Image",
       "fullName": "Full Name",
       "emailAddress": "Email Address",
       "role": "Role",
       "memberSince": "Member Since"
+    },
+    "updateProfile": {
+      "button": "Update Profile",
+      "fetchSuccess": "Profile fetched successfully",
+      "success": "Profile updated successfully",
+      "error": "Failed to update profile"
     },
     "securitySettings": {
       "title": "Security Settings",
@@ -106,22 +118,14 @@
         "title": "Account Status",
         "active": "Active",
         "description": "Your account is active and secure"
-      },
-      "validation": {
-        "currentPasswordRequired": "Please enter current password",
-        "newPasswordRequired": "Please enter new password",
-        "newPasswordMin": "Password must be at least 8 characters",
-        "newPasswordPattern": "Password must contain at least one uppercase letter, one lowercase letter, and one number",
-        "confirmPasswordRequired": "Please confirm new password",
-        "passwordsDoNotMatch": "Passwords do not match"
       }
     }
   },
   "users": {
-    "title": "Users",
-    "subtitle": "Manage system users and their permissions",
-    "addButton": "Add User",
-    "searchPlaceholder": "Search users by name, email, phone, or role...",
+    "title": "System Administrators",
+    "subtitle": "Manage system administrators and their permissions",
+    "addButton": "Add System Administrator",
+    "searchPlaceholder": "Search system administrators by name, email, phone, or role...",
     "filterPlaceholder": "Filter by status",
     "clearFilters": "Clear Filters",
     "table": {
@@ -133,12 +137,12 @@
       "status": "Status",
       "createdAt": "Created",
       "actions": "Actions",
-      "emptyMessage": "No users found"
+      "emptyMessage": "No system administrators found"
     },
     "form": {
-      "addTitle": "Add New User",
-      "editTitle": "Edit User",
-      "userImage": "User Image",
+      "addTitle": "Add New System Administrator",
+      "editTitle": "Edit System Administrator",
+      "userImage": "System Administrator Image",
       "fullName": "Full Name",
       "email": "Email",
       "phone": "Phone",
@@ -172,46 +176,11 @@
       "admin": "Admin",
       "user": "User"
     },
-    "validation": {
-      "name": {
-        "required": "Please enter full name",
-        "minLength": "Name is too short (minimum 2 characters)",
-        "maxLength": "Name is too long (maximum 100 characters)",
-        "invalid": "Name must contain only letters and numbers"
-      },
-      "email": {
-        "required": "Email field is empty, please enter email",
-        "maxLength": "Email is too long (maximum 100 characters)",
-        "invalid": "Invalid email format",
-        "duplicate": "Email already exists in the system"
-      },
-      "phone": {
-        "required": "Phone field is empty, please enter phone number",
-        "invalid": "Invalid phone number",
-        "duplicate": "Phone number already exists in the system"
-      },
-      "password": {
-        "required": "Password field is empty, please enter password",
-        "minLength": "Password is too short (minimum 8 characters)",
-        "maxLength": "Password is too long (maximum 25 characters)",
-        "pattern": "Password must contain uppercase letter, lowercase letter, number and no spaces"
-      },
-      "confirmPassword": {
-        "required": "Password field is empty, please enter password",
-        "mismatch": "Passwords do not match"
-      },
-      "role": {
-        "required": "Field is empty, please select role"
-      },
-      "status": {
-        "required": "Field is empty, please select status"
-      }
-    },
     "messages": {
       "avatarUpload": {
-        "fileTypeError": "Please upload image file only (PNG, JPEG)",
+        "fileTypeError": "Please upload image files only (PNG, JPEG, JPG, WEBP)",
         "fileSizeError": "File size must be less than 1MB",
-        "fileTypeInfo": "PNG, JPEG up to 1MB"
+        "fileTypeInfo": "PNG, JPEG, JPG, WEBP up to 1MB"
       },
       "deleteConfirm": {
         "title": "Confirm Delete",
@@ -220,23 +189,30 @@
         "cancelButton": "Cancel"
       },
       "success": {
-        "userAdded": "User added successfully",
-        "userUpdated": "User updated successfully",
-        "userDeleted": "User deleted successfully",
-        "statusChanged": "User status changed successfully"
+        "userAdded": "System administrator added successfully",
+        "userUpdated": "System administrator updated successfully",
+        "userDeleted": "System administrator deleted successfully",
+        "statusChanged": "System administrator status changed successfully"
       },
       "error": {
-        "fetchUsers": "Failed to fetch users",
-        "addUser": "Failed to add user",
-        "updateUser": "Failed to update user",
-        "deleteUser": "Failed to delete user",
-        "toggleStatus": "Failed to toggle user status"
+        "fetchUsers": "Failed to fetch system administrators",
+        "addUser": "Failed to add system administrator",
+        "updateUser": "Failed to update system administrator",
+        "deleteUser": "Failed to delete system administrator",
+        "toggleStatus": "Failed to toggle system administrator status"
       }
+    },
+    "deactivation": {
+      "title": "Deactivate System Administrator",
+      "message": "Please provide a reason for deactivating system administrator {name}",
+      "reasonLabel": "Deactivation Reason",
+      "reasonPlaceholder": "Enter the reason for deactivating this system administrator...",
+      "confirm": "Deactivate System Administrator"
     }
   },
   "roles": {
     "title": "Roles",
-    "subtitle": "Manage system roles and permissions",
+    "subtitle": "Manage system roles and Admins",
     "addButton": "Add Role",
     "searchPlaceholder": "Search roles by name...",
     "filterPlaceholder": "Filter by status",
@@ -246,6 +222,8 @@
       "status": "Status",
       "createdAt": "Created At",
       "actions": "Actions",
+      "availableOperations": "Available Operations",
+      "permissions": "Permissions",
       "emptyMessage": "No roles found"
     },
     "form": {
@@ -280,18 +258,6 @@
     "status": {
       "active": "Active",
       "inactive": "Inactive"
-    },
-    "validation": {
-      "name": {
-        "required": "Please enter role name",
-        "minLength": "Role name is too short (minimum 2 characters)",
-        "maxLength": "Role name is too long (maximum 100 characters)",
-        "invalid": "Role name must contain only letters",
-        "duplicate": "Role name already exists in the system"
-      },
-      "permissions": {
-        "required": "Please select granted permissions"
-      }
     },
     "messages": {
       "rolesFetched": "Roles fetched successfully",
@@ -336,6 +302,7 @@
     "title": "Permissions",
     "subtitle": "View and manage system permissions",
     "refreshButton": "Refresh",
+    "actions": "Actions",
     "loading": "Loading permissions...",
     "retryButton": "Retry",
     "noDescription": "No description available",
@@ -362,5 +329,137 @@
         "fetchPermissions": "Failed to fetch permissions"
       }
     }
+  },
+  "autoConsultation": {
+    "title": "Auto Consultation",
+    "subtitle": "Manage automatic and intelligent consultation system"
+  },
+  "emojis": {
+    "title": "Emojis",
+    "subtitle": "Manage emojis and emotions"
+  },
+  "validation": {
+    "required": "{field} is required",
+    "minLength": "{field} must be at least {length} characters",
+    "maxLength": "{field} must not exceed {length} characters",
+    "match": "{field} must match {target}",
+    "numeric": "{field} must be a number",
+    "name": {
+      "required": "Please enter full name",
+      "minLength": "Name is too short (minimum 2 characters)",
+      "maxLength": "Name is too long (maximum 100 characters)",
+      "invalid": "Name must contain only letters and numbers",
+      "duplicate": "Name already exists in the system"
+    },
+    "email": {
+      "required": "Email field is empty, please enter email",
+      "maxLength": "Email is too long (maximum 100 characters)",
+      "invalid": "Invalid email format",
+      "duplicate": "Email already exists in the system"
+    },
+    "phone": {
+      "required": "Phone field is empty, please enter phone number",
+      "invalid": "Invalid phone number",
+      "duplicate": "Phone number already exists in the system"
+    },
+    "password": {
+      "required": "Password field is empty, please enter password",
+      "minLength": "Password is too short (minimum 8 characters)",
+      "maxLength": "Password is too long (maximum 25 characters)",
+      "pattern": "Password must contain uppercase letter, lowercase letter, number, special character and no spaces"
+    },
+    "confirmPassword": {
+      "required": "Password field is empty, please enter password",
+      "mismatch": "Passwords do not match"
+    },
+    "role": {
+      "required": "Field is empty, please select role"
+    },
+    "status": {
+      "required": "Field is empty, please select status"
+    },
+    "roleName": {
+      "required": "Please enter role name",
+      "minLength": "Role name is too short (minimum 2 characters)",
+      "maxLength": "Role name is too long (maximum 100 characters)",
+      "invalid": "Role name must contain only letters",
+      "duplicate": "Role name already exists in the system"
+    },
+    "permissions": {
+      "required": "Please select granted permissions"
+    }
+  
+  },
+  "doctors": {
+    "title": "Doctors Management",
+    "description": "Manage doctors and their information"
+  },
+  "specialities": {
+    "title": "Medical Specialties",
+    "description": "Manage medical specialties and categories"
+  },
+  "followUps": {
+    "title": "Follow-up Records",
+    "description": "Manage patient follow-up appointments and records"
+  },
+  "filterRequests": {
+    "title": "Filter Requests",
+    "description": "Manage user filter requests and preferences"
+  },
+  "communityPosts": {
+    "title": "Community Posts",
+    "description": "Manage community posts and discussions"
+  },
+  "advertisements": {
+    "title": "Advertisements",
+    "description": "Manage advertisements and promotional content"
+  },
+  "exercises": {
+    "title": "Exercises",
+    "description": "Manage exercises and workout routines"
+  },
+  "sliders": {
+    "title": "Sliders",
+    "description": "Manage homepage sliders and banners"
+  },
+  "about": {
+    "title": "About Us",
+    "description": "Learn more about our application and services"
+  },
+  "terms": {
+    "title": "Terms & Conditions",
+    "description": "Read our terms and conditions"
+  },
+  "privacy": {
+    "title": "Privacy Policy",
+    "description": "Read our privacy policy and data protection information"
+  },
+  "settings": {
+    "title": "Settings",
+    "description": "Manage application settings and configurations"
+  },
+  "faqs": {
+    "title": "Frequently Asked Questions",
+    "description": "Manage frequently asked questions and answers"
+  },
+  "countries": {
+    "title": "Countries Management",
+    "description": "Manage countries and their information"
+  },
+  "regions": {
+    "title": "Regions Management",
+    "description": "Manage regions and provinces"
+  },
+  "cities": {
+    "title": "Cities Management",
+    "description": "Manage cities and urban areas"
+  },
+  "districts": {
+    "title": "Districts Management",
+    "description": "Manage districts and neighborhoods"
+  },
+  "appPages": {
+    "title": "App Pages",
+    "description": "Manage dynamic app pages and content"
   }
 }

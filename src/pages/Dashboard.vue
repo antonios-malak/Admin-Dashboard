@@ -25,7 +25,7 @@ const loading = ref(false)
 const fetchStats = async () => {
   loading.value = true
   try {
-    const response = await api.get('/api/stats')
+    const response = await api.get('/stats')
     // If response.data is an object, convert it to an array of { key, value } objects
     if (Array.isArray(response.data)) {
       stats.value = response.data

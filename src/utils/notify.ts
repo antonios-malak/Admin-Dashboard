@@ -11,5 +11,6 @@ export function notify(
     type,
     position: 'top-right',
     duration: 2500,
+    showClose: false
   })
 }
