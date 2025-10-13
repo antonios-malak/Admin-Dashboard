@@ -9,8 +9,8 @@ export const pagePermissions: Record<string, string> = {
 
   // ✅ إدارة النظام
   "/admins": "admins_index",
-  "/roles": "roles_index",
-  "/permissions": "permissions_index",
+  // "/roles": "roles_index",
+  // "/permissions": "permissions_index",
 
   // ✅ الكيانات الأساسية
   "/doctors": "doctors_index",

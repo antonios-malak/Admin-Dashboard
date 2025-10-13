@@ -1,5 +1,5 @@
 <template>
-  <div class="flex gap-2">
+  <div class="flex gap-2 pr-2">
     <!-- View Button -->
     <el-button
       v-if="showView"

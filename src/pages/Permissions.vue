@@ -74,11 +74,21 @@ import { usePermissionsStore } from '@/stores/permissions'
 // Composables
 const { t } = useI18n()
 const permStore = usePermissionsStore()
-const permissions = computed(() => permStore.permissions.map(p => ({
-  ...p,
-  // override table fields: name column shows group title
-  name: permStore.groups[p.category]?.title || p.name
-})))
+const permissions = computed(() => {
+  // ensure unique groups by category when showing group rows only
+  // We want one row per group; use first permission per group as representative
+  const map = new Map<string, any>()
+  permStore.permissions.forEach((p: any) => {
+    if (!map.has(p.category)) {
+      map.set(p.category, {
+        id: p.id,
+        name: permStore.groups[p.category]?.title || p.name,
+        category: p.category
+      })
+    }
+  })
+  return Array.from(map.values())
+})
 const dir = computed(() => document.documentElement.getAttribute('dir') || 'ltr')
 const loading = computed(() => permStore.loading)
 const fetchPermissions = () => permStore.fetchPermissions()

@@ -9,6 +9,36 @@ export interface Permission {
   display_name: string;
 }
 
+// Normalize permissions: supports array of groups or flat array of permissions
+function normalizePermissions(input: any): Permission[] {
+  const out: Permission[] = []
+  if (!input) return out
+  if (Array.isArray(input)) {
+    // Case 1: already flat list of permissions
+    if (input.length && input.every((p) => typeof p?.name === 'string')) {
+      return input as Permission[]
+    }
+    // Case 2: array of groups: [{ title, permissions: [ ... ] }, ...]
+    input.forEach((g: any) => {
+      if (Array.isArray(g?.permissions)) {
+        g.permissions.forEach((p: any) => {
+          if (p?.name) out.push({ id: p.id, name: p.name, display_name: p.display_name })
+        })
+      }
+    })
+  } else if (typeof input === 'object') {
+    // Case 3: object keyed by group
+    Object.values(input).forEach((g: any) => {
+      if (Array.isArray(g?.permissions)) {
+        g.permissions.forEach((p: any) => {
+          if (p?.name) out.push({ id: p.id, name: p.name, display_name: p.display_name })
+        })
+      }
+    })
+  }
+  return out
+}
+
 export const useAuthStore = defineStore("auth", {
   state: () => ({
     token: localStorage.getItem("token") || "",
@@ -23,9 +53,10 @@ export const useAuthStore = defineStore("auth", {
     permissions: (() => {
       try {
         const permissionsData = localStorage.getItem("permissions");
-        return permissionsData ? JSON.parse(permissionsData) : [];
+        const raw = permissionsData ? JSON.parse(permissionsData) : [];
+        return normalizePermissions(raw);
       } catch {
-        return [];
+        return [] as Permission[];
       }
     })(),
     resetToken: localStorage.getItem("reset_token") || "",
@@ -46,7 +77,7 @@ export const useAuthStore = defineStore("auth", {
         const response = await api.post("/login", formData);
 
         const { admin: user, token } = response.data.data;
-        const permissions = user.role?.permissions || [];
+        const permissions = normalizePermissions(user.role?.permissions || []);
         
         this.token = token;
         this.user = user;

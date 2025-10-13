@@ -23,30 +23,54 @@ export const usePermissionsStore = defineStore('permissions', () => {
       error.value = null
       const res = await api.get('/permissions')
       // shape: data: { key: { title, permissions: [ {...} ] }, ... }
-      const obj = res.data?.data || res.data || {}
+      const payload = res.data?.data || res.data || {}
       const flat: FlatPermission[] = []
       const grouped: Record<string, { title: string; permissions: FlatPermission[] }> = {}
-      Object.keys(obj).forEach((key) => {
-        const group = obj[key]
-        const items: any[] = Array.isArray(group?.permissions) ? group.permissions : []
-        items.forEach((p: any) => {
-          flat.push({
-            id: p.id,
-            name: p.name,
-            display_name: p.display_name,
-            category: key
-          })
-        })
-        grouped[key] = {
-          title: group?.title || key,
-          permissions: items.map((p: any) => ({
+
+      const toSlug = (str: string, fallback: string) => {
+        if (!str || typeof str !== 'string') return fallback
+        return str
+          .toLowerCase()
+          .trim()
+          .replace(/[^a-z0-9]+/gi, '-')
+          .replace(/(^-|-$)/g, '') || fallback
+      }
+
+      if (Array.isArray(payload)) {
+        // New shape: data: [ { title, permissions: [ ... ] }, ... ]
+        payload.forEach((group: any, idx: number) => {
+          const key = toSlug(group?.title, `group-${idx}`)
+          const items: any[] = Array.isArray(group?.permissions) ? group.permissions : []
+          const mapped = items.map((p: any) => ({
             id: p.id,
             name: p.name,
             display_name: p.display_name,
             category: key
           }))
-        }
-      })
+          mapped.forEach((m) => flat.push(m))
+          grouped[key] = {
+            title: group?.title || key,
+            permissions: mapped
+          }
+        })
+      } else {
+        // Old shape: data: { key: { title, permissions: [ ... ] }, ... }
+        Object.keys(payload).forEach((key) => {
+          const group = payload[key]
+          const items: any[] = Array.isArray(group?.permissions) ? group.permissions : []
+          const mapped = items.map((p: any) => ({
+            id: p.id,
+            name: p.name,
+            display_name: p.display_name,
+            category: key
+          }))
+          mapped.forEach((m) => flat.push(m))
+          grouped[key] = {
+            title: group?.title || key,
+            permissions: mapped
+          }
+        })
+      }
       permissions.value = flat
       groups.value = grouped
       notify('success', res?.data?.message || i18n.global.t('permissions.messages.success.refreshed'), i18n.global.t('permissions.title'))

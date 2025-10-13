@@ -31,7 +31,7 @@
       :columns="tableColumns"
       :loading="rolesStore.loading"
       :empty-message="$t('roles.table.emptyMessage')"
-      :actions-min-width="220"
+      :actions-min-width="240"
       :actions-label="$t('roles.table.availableOperations')"
     >
       <template #permissions="{ row }">
@@ -381,9 +381,64 @@ const clearFilters = () => {
   searchQuery.value = ''
 }
 
-const mapRolePermissionNames = (perms: any[]): string[] => {
-  if (!Array.isArray(perms)) return []
-  return perms.map((p: any) => (typeof p === 'string' ? p : p?.name)).filter(Boolean)
+// Robust mapper to support multiple backend shapes
+const mapRolePermissionNames = (perms: any): string[] => {
+  const names: string[] = []
+
+  const pushIfValid = (val: any) => {
+    if (!val) return
+    if (typeof val === 'string') {
+      names.push(val)
+      return
+    }
+    if (typeof val === 'object') {
+      // Common fields
+      const candidate = val.name || val.display_name || val.permission_name || val.slug
+      if (typeof candidate === 'string') {
+        names.push(candidate)
+        return
+      }
+      // If nested object contains its own permissions array
+      if (Array.isArray(val.permissions)) {
+        val.permissions.forEach((p: any) => pushIfValid(p))
+        return
+      }
+      // If grouped object: { groupKey: { title, permissions: [...] }, ... }
+      const maybeGroups = Object.values(val as Record<string, any>)
+      if (maybeGroups.some((g: any) => Array.isArray(g?.permissions))) {
+        maybeGroups.forEach((g: any) => {
+          if (Array.isArray(g?.permissions)) g.permissions.forEach((p: any) => pushIfValid(p))
+        })
+        return
+      }
+    }
+  }
+
+  const walk = (input: any) => {
+    if (!input) return
+    if (Array.isArray(input)) {
+      input.forEach((item) => pushIfValid(item))
+      return
+    }
+    if (typeof input === 'object') {
+      // Some APIs return { permissions: [...] }
+      if (Array.isArray(input.permissions)) {
+        input.permissions.forEach((p: any) => pushIfValid(p))
+        return
+      }
+      // Grouped object
+      const values = Object.values(input)
+      if (values.length && values.every((v: any) => typeof v === 'object')) {
+        values.forEach((v: any) => walk(v))
+        return
+      }
+    }
+    // Fallback
+    pushIfValid(input)
+  }
+
+  walk(perms)
+  return names.filter(Boolean)
 }
 
 const viewingRolePermissionNames = computed(() => {

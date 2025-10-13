@@ -7,7 +7,13 @@
     
     <!-- Table -->
     <div v-else-if="data.length > 0" class="overflow-x-auto border border-gray-200 rounded-lg">
-      <el-table :data="data" border stripe v-bind="$attrs">
+      <el-table 
+        :data="data" 
+        border 
+        stripe 
+        v-bind="$attrs"
+        style="min-width: 900px"
+      >
         <el-table-column 
           v-for="column in columns" 
           :key="column.prop || column.label"
