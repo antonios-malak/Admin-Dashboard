@@ -16,13 +16,19 @@ const patterns = {
   email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
   phone: /^\d{7,15}$/,
   name: /^[a-zA-Z0-9\u0600-\u06FF\s]+$/,
+  nameEn: /^[a-zA-Z\s]+$/,
+  nameAr: /^[\u0600-\u06FF\s]+$/,
   roleName: /^[a-zA-Z\u0600-\u06FF\s]+$/,
-  password: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?])(?!.*\s).+$/
+  password: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>\/?])(?!.*\s).+$/,
+  url: /^(https?:\/\/)[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:\/?#\[\]@!$&'()*+,;=.]+$/i,
+  hexColor: /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/
 }
 
 // Validation limits
 const limits = {
   name: { min: 2, max: 100 },
+  nameEn: { min: 2, max: 100 },
+  nameAr: { min: 2, max: 100 },
   email: { max: 100 },
   phone: { min: 7, max: 15 },
   password: { min: 8, max: 25 },
@@ -31,7 +37,7 @@ const limits = {
 
 // Validation functions
 export const validate = {
-  required: (value: any) => !value ? t('validation.required', { field: 'Field' }) : null,
+  required: (value: any, fieldName: string = 'Field') => !value ? t('validation.required', { field: fieldName }) : null,
   
   email: (value: string) => {
     if (!value) return t('validation.email.required')
@@ -45,6 +51,22 @@ export const validate = {
     if (value.length < limits.name.min) return t('validation.name.minLength')
     if (value.length > limits.name.max) return t('validation.name.maxLength')
     if (!patterns.name.test(value)) return t('validation.name.invalid')
+    return null
+  },
+
+  nameEn: (value: string) => {
+    if (!value) return t('validation.nameEnRequired')
+    if (value.length < limits.nameEn.min) return t('validation.name.minLength')
+    if (value.length > limits.nameEn.max) return t('validation.name.maxLength')
+    if (!patterns.nameEn.test(value)) return t('validation.nameEn.invalid')
+    return null
+  },
+
+  nameAr: (value: string) => {
+    if (!value) return t('validation.nameArRequired')
+    if (value.length < limits.nameAr.min) return t('validation.name.minLength')
+    if (value.length > limits.nameAr.max) return t('validation.name.maxLength')
+    if (!patterns.nameAr.test(value)) return t('validation.nameAr.invalid')
     return null
   },
   
@@ -87,6 +109,43 @@ export const validate = {
   permissions: (value: any[]) => {
     if (!value || value.length === 0) return t('validation.permissions.required')
     return null
+  },
+
+  emojiSymbol: (value: string) => {
+    if (!value) return t('validation.emojiSymbolRequired')
+    return null
+  },
+
+  url: (value: string) => {
+    if (!value) return t('validation.urlRequired')
+    if (!patterns.url.test(value)) return t('validation.invalidUrl')
+    return null
+  },
+
+  imageFile: (value: any) => {
+    if (!value) return t('validation.imageRequired')
+    // Must be a File
+    const isFile = typeof File !== 'undefined' && value instanceof File
+    if (!isFile) return t('validation.imageRequired')
+    const type = (value as File).type?.toLowerCase() || ''
+    const name = (value as File).name?.toLowerCase() || ''
+    const allowed = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp']
+    const extAllowed = ['.png', '.jpeg', '.jpg', '.webp']
+    if (!allowed.includes(type) && !extAllowed.some(ext => name.endsWith(ext))) {
+      return t('validation.invalidImageType')
+    }
+    return null
+  },
+
+  emojiId: (value: any) => {
+    if (!value) return t('validation.emojiRequired')
+    return null
+  },
+
+  hexColor: (value: string) => {
+    if (!value) return t('validation.colorRequired')
+    if (!patterns.hexColor.test(value)) return t('validation.invalidHexColor')
+    return null
   }
 }
 
@@ -95,6 +154,20 @@ export const createRules = {
   name: () => [
     { validator: (_rule: any, value: string, callback: Function) => {
       const error = validate.name(value)
+      callback(error ? new Error(error) : undefined)
+    }, trigger: 'blur' }
+  ],
+
+  nameEn: () => [
+    { validator: (_rule: any, value: string, callback: Function) => {
+      const error = validate.nameEn(value)
+      callback(error ? new Error(error) : undefined)
+    }, trigger: 'blur' }
+  ],
+
+  nameAr: () => [
+    { validator: (_rule: any, value: string, callback: Function) => {
+      const error = validate.nameAr(value)
       callback(error ? new Error(error) : undefined)
     }, trigger: 'blur' }
   ],
@@ -152,5 +225,41 @@ export const createRules = {
       const error = validate.permissions(value)
       callback(error ? new Error(error) : undefined)
     }, trigger: 'change' }
+  ],
+
+  emojiSymbol: () => [
+    { validator: (_rule: any, value: string, callback: Function) => {
+      const error = validate.emojiSymbol(value)
+      callback(error ? new Error(error) : undefined)
+    }, trigger: 'blur' }
+  ],
+
+  imageUrl: () => [
+    { required: true, message: t('validation.required', { field: 'Image URL' }), trigger: 'blur' },
+    { validator: (_rule: any, value: string, callback: Function) => {
+      const error = validate.url(value)
+      callback(error ? new Error(error) : undefined)
+    }, trigger: 'blur' }
+  ],
+
+  imageFile: () => [
+    { validator: (_rule: any, value: any, callback: Function) => {
+      const error = validate.imageFile(value)
+      callback(error ? new Error(error) : undefined)
+    }, trigger: 'change' }
+  ],
+
+  hexColor: () => [
+    { validator: (_rule: any, value: string, callback: Function) => {
+      const error = validate.hexColor(value)
+      callback(error ? new Error(error) : undefined)
+    }, trigger: 'blur' }
+  ],
+
+  emojiId: () => [
+    { validator: (_rule: any, value: any, callback: Function) => {
+      const error = validate.emojiId(value)
+      callback(error ? new Error(error) : undefined)
+    }, trigger: 'blur' }
   ]
 }

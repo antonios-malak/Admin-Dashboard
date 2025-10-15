@@ -1,4 +1,13 @@
 {
+  "common": {
+    "actions": {
+      "view": "View",
+      "edit": "Edit", 
+      "delete": "Delete",
+      "enable": "Enable",
+      "disable": "Disable"
+    }
+  },
   "resetpassword": {
     "title": "Update Password",
     "password": "New Password",
@@ -73,8 +82,7 @@
       "districts": "Districts",
       "bags": "Bags",
       "packages": "Packages",
-      "nationalities": "Nationalities",
-      "sliders": "Sliders"
+      "nationalities": "Nationalities"
     }
   },
   "dashboard": {
@@ -169,7 +177,8 @@
         "cancel": "Cancel",
         "submit": "Save",
         "edit": "Edit",
-        "delete": "Delete"
+        "delete": "Delete",
+        "confirm": "Confirm"
       }
     },
    
@@ -341,67 +350,147 @@
   },
   "emojis": {
     "title": "Emojis",
-    "subtitle": "Manage emojis and emotions"
+    "subtitle": "Manage emojis and emotions",
+    "addButton": "Add Symbol",
+    "table": {
+      "emptyMessage": "No emojis found",
+      "index": "#",
+      "symbol": "Symbol",
+      "createdAt": "Created",
+      "actions": "Actions"
+    },
+    "form": {
+      "addTitle": "Add Emoji",
+      "editTitle": "Edit Emoji",
+      "viewTitle": "View Emoji",
+      "fields": {
+        "symbolEn": "Symbol (EN)",
+          "symbolAr": "Symbol (AR)",
+        "imageUrl": "Upload Image"
+      }
+    }
   },
   "validation": {
-    "required": "{field} is required",
-    "minLength": "{field} must be at least {length} characters",
-    "maxLength": "{field} must not exceed {length} characters",
-    "match": "{field} must match {target}",
-    "numeric": "{field} must be a number",
-    "name": {
-      "required": "Please enter full name",
-      "minLength": "Name is too short (minimum 2 characters)",
-      "maxLength": "Name is too long (maximum 100 characters)",
-      "invalid": "Name must contain only letters and numbers",
-      "duplicate": "Name already exists in the system"
-    },
+    "required": "The {field} field is required",
     "email": {
-      "required": "Email field is empty, please enter email",
-      "maxLength": "Email is too long (maximum 100 characters)",
-      "invalid": "Invalid email format",
-      "duplicate": "Email already exists in the system"
+      "required": "Email is required",
+      "invalid": "Please enter a valid email address",
+      "maxLength": "Email must not exceed 100 characters"
+    },
+    "name": {
+      "required": "Name is required",
+      "minLength": "Name must be at least 2 characters",
+      "maxLength": "Name must not exceed 100 characters",
+      "invalid": "Name contains invalid characters"
+    },
+    "nameEn": {
+      "invalid": "English name must contain only English letters and spaces"
+    },
+    "nameAr": {
+      "invalid": "Arabic name must contain only Arabic letters and spaces"
     },
     "phone": {
-      "required": "Phone field is empty, please enter phone number",
-      "invalid": "Invalid phone number",
-      "duplicate": "Phone number already exists in the system"
+      "required": "Phone number is required",
+      "invalid": "Please enter a valid phone number"
     },
     "password": {
-      "required": "Password field is empty, please enter password",
-      "minLength": "Password is too short (minimum 8 characters)",
-      "maxLength": "Password is too long (maximum 25 characters)",
-      "pattern": "Password must contain uppercase letter, lowercase letter, number, special character and no spaces"
+      "required": "Password is required",
+      "minLength": "Password must be at least 8 characters",
+      "maxLength": "Password must not exceed 25 characters",
+      "pattern": "Password must contain uppercase, lowercase, number and special character"
     },
     "confirmPassword": {
-      "required": "Password field is empty, please enter password",
+      "required": "Please confirm your password",
       "mismatch": "Passwords do not match"
     },
     "role": {
-      "required": "Field is empty, please select role"
+      "required": "Please select a role"
     },
     "status": {
-      "required": "Field is empty, please select status"
+      "required": "Please select a status"
     },
     "roleName": {
-      "required": "Please enter role name",
-      "minLength": "Role name is too short (minimum 2 characters)",
-      "maxLength": "Role name is too long (maximum 100 characters)",
-      "invalid": "Role name must contain only letters",
-      "duplicate": "Role name already exists in the system"
+      "required": "Role name is required",
+      "minLength": "Role name must be at least 2 characters",
+      "maxLength": "Role name must not exceed 100 characters",
+      "invalid": "Role name contains invalid characters"
     },
     "permissions": {
-      "required": "Please select granted permissions"
-    }
-  
+      "required": "Please select at least one permission"
+    },
+    "invalidUrl": "Please enter a valid URL",
+    "invalidImageType": "Please upload a valid image file (PNG, JPEG, JPG, WEBP)",
+    "emojiRequired": "Emoji field is required",
+    "colorRequired": "Color field is required",
+    "nameEnRequired": "English name field is required",
+    "nameArRequired": "Arabic name field is required",
+    "imageRequired": "Image field is required",
+    "emojiSymbolRequired": "Emoji symbol field is required",
+    "urlRequired": "Image URL field is required",
+    "invalidHexColor": "Please enter a valid hex color code"
   },
   "doctors": {
     "title": "Doctors Management",
-    "description": "Manage doctors and their information"
+    "description": "Manage doctors and their information",
+    "requestsButton": "Verification Requests",
+    "requests": {
+      "title": "Verification Requests",
+      "subtitle": "Manage doctor identity verification requests"
+    }
   },
   "specialities": {
     "title": "Medical Specialties",
-    "description": "Manage medical specialties and categories"
+    "description": "Manage medical specialties and categories",
+    "addButton": "Add Speciality",
+    "searchPlaceholder": "Search by speciality name...",
+    "table": {
+      "emptyMessage": "No specialities found",
+      "name": "Speciality",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "messages": {
+      "success": {
+        "created": "Speciality created successfully",
+        "updated": "Speciality updated successfully",
+        "deleted": "Speciality deleted successfully",
+        "toggled": "Speciality status changed successfully"
+      },
+      "error": {
+        "fetch": "Failed to fetch specialities",
+        "create": "Failed to create speciality",
+        "update": "Failed to update speciality",
+        "delete": "Failed to delete speciality",
+        "toggle": "Failed to toggle speciality status"
+      },
+      "confirmDelete": {
+        "title": "Confirm Delete",
+        "message": "Are you sure you want to delete speciality \"{name}\"?"
+      },
+      "confirmDisable": {
+        "title": "Confirm Disable",
+        "message": "Do you want to disable this speciality?"
+      },
+      "confirmEnable": {
+        "title": "Confirm Enable",
+        "message": "Do you want to enable this speciality?"
+      }
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "form": {
+      "addTitle": "Add Speciality",
+      "editTitle": "Edit Speciality",
+      "viewTitle": "Speciality Details",
+      "fields": {
+        "nameEn": "Name (EN)",
+        "nameAr": "Name (AR)",
+        "color": "Color",
+        "emoji": "Emoji"
+      }
+    }
   },
   "followUps": {
     "title": "Follow-up Records",
@@ -443,10 +532,6 @@
   "exercises": {
     "title": "Exercises",
     "description": "Manage exercises and workout routines"
-  },
-  "sliders": {
-    "title": "Sliders",
-    "description": "Manage homepage sliders and banners"
   },
   "settings": {
     "title": "Settings",

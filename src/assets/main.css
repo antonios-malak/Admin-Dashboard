@@ -69,6 +69,12 @@
       transform: scaleX(-1);
     }
 
+    /* Pagination buttons rotation for RTL */
+    .el-pagination .btn-prev,
+    .el-pagination .btn-next {
+      transform: rotate(180deg);
+    }
+
     /* --- Icon/text spacing swaps for RTL --- */
     /* Buttons: icon before text -> space on left; icon after text -> space on right */
     .el-button .el-icon {

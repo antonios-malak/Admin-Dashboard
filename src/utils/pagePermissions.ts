@@ -9,17 +9,17 @@ export const pagePermissions: Record<string, string> = {
 
   // ✅ إدارة النظام
   "/admins": "admins_index",
-  // "/roles": "roles_index",
-  // "/permissions": "permissions_index",
+  "/roles": "roles_index",
+  "/permissions": "permissions_index",
 
   // ✅ الكيانات الأساسية
   "/doctors": "doctors_index",
+  "/doctors/requests": "doctors_verification_requests",
   "/specialities": "specialities_index",
   "/exercises": "exercises_index",
   "/follow-ups": "follow-ups_index",
   "/recovery-plans":"recovery-plans_index",
-  //   '/advertisements': "advertisements_index",
-  "/sliders": "sliders_index",
+  "/advertisements": "sliders_index",
 
   // ✅ إدارة المجتمع
   //   '/community-posts': "community-posts_index",
@@ -59,6 +59,5 @@ export const pagePermissions: Record<string, string> = {
   "/auto-consultation": "auto-consultation_index",
   "/emojis": "emojis_index",
   //   '/videos': "videos_index"
-  //   '/ads': "ads_index"
   // '/categories': "categories_index"
 };

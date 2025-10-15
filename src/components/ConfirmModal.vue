@@ -22,7 +22,7 @@
           {{ cancelText }}
         </el-button>
         <el-button 
-          type="danger" 
+          :type="confirmType" 
           @click="handleConfirm" 
           :loading="loading"
         >
@@ -46,6 +46,7 @@ interface Props {
   cancelText?: string
   width?: string
   loading?: boolean
+  confirmType?: 'primary' | 'success' | 'warning' | 'danger' | ''
 }
 
 interface Emits {
@@ -59,7 +60,8 @@ const props = withDefaults(defineProps<Props>(), {
   confirmText: 'Confirm',
   cancelText: 'Cancel',
   width: '400px',
-  loading: false
+  loading: false,
+  confirmType: 'danger'
 })
 
 const emit = defineEmits<Emits>()

@@ -44,6 +44,11 @@ export const useUserStore = defineStore('user', () => {
   const users = ref<User[]>([])
   const loading = ref(false)
   const error = ref<string | null>(null)
+  // server-side pagination state
+  const currentPage = ref(1)
+  const perPage = ref(10)
+  const totalItems = ref(0)
+  const lastPage = ref(1)
 
   // Getters
   const activeUsers = computed(() => 
@@ -69,13 +74,19 @@ export const useUserStore = defineStore('user', () => {
   })
 
   // Actions
-  const fetchUsers = async () => {
+  const fetchUsers = async (page = 1) => {
     try {
       loading.value = true
       error.value = null
       
-      const response = await api.get('/admins')
-      users.value = response.data.data || response.data
+      const response = await api.get('/admins', { params: { page } })
+      const payload = response.data || {}
+      users.value = payload?.data || []
+      const meta = payload?.meta || {}
+      currentPage.value = Number(meta?.current_page) || page
+      perPage.value = Number(meta?.per_page) || perPage.value
+      totalItems.value = Number(meta?.total) || (Array.isArray(payload?.data) ? payload.data.length : 0)
+      lastPage.value = Number(meta?.last_page) || lastPage.value
       
     } catch (err: any) {
       error.value = err?.response?.data?.message || t('users.messages.error.fetchUsers')
@@ -208,6 +219,12 @@ export const useUserStore = defineStore('user', () => {
     users,
     loading,
     error,
+    
+    // server pagination exports
+    currentPage,
+    perPage,
+    totalItems,
+    lastPage,
     
     // Getters
     activeUsers,

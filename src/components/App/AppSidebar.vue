@@ -120,7 +120,7 @@ const menuItems = [
   { route: '/auto-consultation', name: 'autoConsultation', type: 'item' },
   { route: '/filter-requests', name: 'windingUpRequests', type: 'item' },
   { route: '/emojis', name: 'emojis', type: 'item' },
-  { route: '/sliders', name: 'sliders', type: 'item' },
+  
   
   // Personal pages
   { route: '/my-account', name: 'myAccount', type: 'item' },

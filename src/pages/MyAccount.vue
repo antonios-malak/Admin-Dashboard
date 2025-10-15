@@ -34,6 +34,7 @@
                     v-model="profileForm.name"
                     :maxlength="100"
                     show-word-limit
+                    :readonly="!canUpdateProfile"
                     style="
                       border-radius: 8px;
                       border: 1px solid #e5e7eb;
@@ -54,6 +55,7 @@
                     v-model="profileForm.email"
                     :maxlength="100"
                     show-word-limit
+                    :readonly="!canUpdateProfile"
                     style="
                       border-radius: 8px;
                       border: 1px solid #e5e7eb;
@@ -117,6 +119,7 @@
                       v-model="profileForm.countryCode"
                       class="basis-[175px]"
                       filterable
+                      :disabled="!canUpdateProfile"
                     >
                       <el-option
                         v-for="option in countryCodes"
@@ -129,6 +132,7 @@
                       v-model="profileForm.phone"
                       maxlength="15"
                       show-word-limit
+                      :readonly="!canUpdateProfile"
                     />
                   </div>
                 </el-form-item>
@@ -144,6 +148,7 @@
                     class="avatar-uploader"
                     :show-file-list="false"
                     :before-upload="handleAvatarUpload"
+                    :disabled="!canUpdateProfile"
                     accept="image/png,image/jpeg"
                   >
                     <el-avatar
@@ -166,12 +171,12 @@
             <!-- Password inline block moved just under name/email via the toggle below -->
 
             <div class="grid grid-cols-1 gap-4 mt-4">
-              <div v-if="!showPasswordFields" class="flex justify-center">
+              <div v-if="!showPasswordFields && canUpdateProfile" class="flex justify-center">
                 <el-button type="default" @click="showPasswordFields = true">{{
                   $t("myAccount.securitySettings.changePassword.button")
                 }}</el-button>
               </div>
-              <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div v-else-if="canUpdateProfile" class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="space-y-2">
                   <label
                     class="block text-sm font-semibold mb-2"
@@ -213,6 +218,7 @@
               </div>
               <div class="flex justify-end">
                 <el-button
+                  v-if="authStore.hasPermission('profile_update')"
                   type="primary"
                   :loading="profileStore.loading"
                   @click="submitProfile"
@@ -231,7 +237,6 @@
   import { ref, reactive, computed, onMounted } from "vue";
   import { useAuthStore } from "@/stores/auth";
   import { useProfileStore } from "@/stores/profile";
-  import { useI18n } from "vue-i18n";
   import { useCountriesStore } from "@/stores/countries";
   import { User } from "@element-plus/icons-vue";
   import PageHeader from "@/components/PageHeader.vue";
@@ -268,6 +273,8 @@ import { createRules } from '@/utils/validation'
     avatarPreview: "",
   });
   const showPasswordFields = ref(false);
+
+  const canUpdateProfile = computed(() => authStore.hasPermission('profile_update'))
 
   // Country codes from store
   const countryCodes = computed(() => countriesStore.options);
@@ -342,6 +349,9 @@ import { createRules } from '@/utils/validation'
 
   // Submit
   async function submitProfile() {
+    if (!authStore.hasPermission('Update - Profile')) {
+      return
+    }
     if (!profileFormRef.value) return;
     await profileFormRef.value.validate();
     const selectedCode = countryCodes.value.find(

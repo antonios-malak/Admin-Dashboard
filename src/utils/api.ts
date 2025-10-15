@@ -24,6 +24,10 @@ api.interceptors.request.use((config) => {
     config.headers.Authorization = `Bearer ${token}`
   }
   
+  // Set Accept-Language header for backend localization
+  const currentLocale = localStorage.getItem('locale') || 'en'
+  config.headers['Accept-Language'] = currentLocale
+  
   // Set Content-Type for FormData
   if (config.data instanceof FormData) {
     config.headers['Content-Type'] = 'multipart/form-data'

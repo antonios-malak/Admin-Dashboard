@@ -21,6 +21,9 @@ document.documentElement.setAttribute('dir', i18n.global.locale.value === 'ar' ?
 watch(() => i18n.global.locale.value, (newLocale) => {
   document.documentElement.setAttribute('dir', newLocale === 'ar' ? 'rtl' : 'ltr');
   localStorage.setItem('locale', newLocale);
+  
+  // Refresh current page to update API responses with new Accept-Language header
+  window.location.reload();
 });
 
 const app = createApp(App);

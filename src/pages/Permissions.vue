@@ -9,6 +9,7 @@
     <!-- Refresh Button -->
     <div class="mb-4 flex justify-end">
       <el-button
+        v-if="canUpdate"
         @click="refreshPermissions"
         :loading="loading"
         type="primary"
@@ -70,10 +71,12 @@ import PageHeader from '@/components/PageHeader.vue'
 import DataTable from '@/components/DataTable.vue'
 import LocalPagination from '@/components/LocalPagination.vue'
 import { usePermissionsStore } from '@/stores/permissions'
+import { useAuthStore } from '@/stores/auth'
 
 // Composables
 const { t } = useI18n()
 const permStore = usePermissionsStore()
+const authStore = useAuthStore()
 const permissions = computed(() => {
   // ensure unique groups by category when showing group rows only
   // We want one row per group; use first permission per group as representative
@@ -92,7 +95,11 @@ const permissions = computed(() => {
 const dir = computed(() => document.documentElement.getAttribute('dir') || 'ltr')
 const loading = computed(() => permStore.loading)
 const fetchPermissions = () => permStore.fetchPermissions()
-const refreshPermissions = () => permStore.updatePermissions()
+const canUpdate = computed(() => authStore.hasPermission('permissions_update'))
+const refreshPermissions = () => {
+  if (!canUpdate.value) return
+  return permStore.updatePermissions()
+}
 
 // Table columns configuration
 const tableColumns = computed(() => [

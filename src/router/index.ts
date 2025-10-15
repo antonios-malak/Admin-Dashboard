@@ -24,7 +24,8 @@ const routes = [
       { path: 'emojis', component: () => import('@/pages/Emojis.vue') },
       
       // Medical Management
-      { path: 'doctors', component: () => import('@/pages/Doctors.vue') },
+      { path: 'doctors', component: () => import('@/pages/Doctors/index.vue') },
+      { path: 'doctors/requests', component: () => import('@/pages/Doctors/Requests.vue') },
       { path: 'specialities', component: () => import('@/pages/Specialities.vue') },
       { path: 'follow-ups', component: () => import('@/pages/FollowUps/index.vue') },
       { path: 'recovery-plans', component: () => import('@/pages/RecoveryPlans.vue') },
@@ -35,7 +36,6 @@ const routes = [
       { path: 'community-posts', component: () => import('@/pages/CommunityPosts.vue') },
       { path: 'advertisements', component: () => import('@/pages/Advertisements.vue') },
       { path: 'exercises', component: () => import('@/pages/Exercises.vue') },
-      { path: 'sliders', component: () => import('@/pages/Sliders.vue') },
       
       // Settings & Management
       { path: 'settings', component: () => import('@/pages/Settings.vue') },

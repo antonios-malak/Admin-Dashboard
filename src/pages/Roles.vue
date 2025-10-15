@@ -3,7 +3,7 @@
     <PageHeader 
       :title="$t('roles.title')" 
       :subtitle="$t('roles.subtitle')"
-      show-add-button
+      :show-add-button="canAdd"
       :add-button-text="$t('roles.addButton')"
       @add="openAddDialog"
     />
@@ -27,6 +27,7 @@
 
     <!-- Roles Data Table -->
     <DataTable
+      v-if="canShow"
       :data="filteredRoles"
       :columns="tableColumns"
       :loading="rolesStore.loading"
@@ -34,6 +35,9 @@
       :actions-min-width="240"
       :actions-label="$t('roles.table.availableOperations')"
     >
+      <template #index="{ index }">
+        <span>{{ baseIndex + index + 1 }}</span>
+      </template>
       <template #permissions="{ row }">
         <div class="flex flex-wrap gap-2">
           <el-tag
@@ -51,16 +55,31 @@
       <template #actions="{ row }">
         <ActionButtons
           :item="row"
-          :show-view="true"
-          :show-edit="true"
-          :show-delete="true"
+          :show-view="canView"
+          :show-edit="canEdit"
+          :show-delete="canDelete"
           :show-status="false"
+          :view-text="$t('common.actions.view')"
+          :edit-text="$t('common.actions.edit')"
+          :delete-text="$t('common.actions.delete')"
           @view="viewRole"
           @edit="openEditDialog"
           @delete="handleDelete"
         />
       </template>
     </DataTable>
+
+    <!-- Server pagination controls -->
+    <div class="mt-4 flex items-center justify-end gap-2" v-if="rolesStore.lastPage > 1">
+      <el-pagination
+        background
+        layout="prev, pager, next"
+        :current-page="rolesStore.currentPage"
+        :page-size="rolesStore.perPage"
+        :total="rolesStore.totalItems"
+        @current-change="handlePageChange"
+      />
+    </div>
 
     <!-- Add Role Dialog -->
     <FormDialog
@@ -70,6 +89,8 @@
       :fields="addFormFields"
       :rules="formRules"
       :loading="rolesStore.loading"
+      :submit-text="$t('roles.form.buttons.submit')"
+      :cancel-text="$t('roles.form.buttons.cancel')"
       @submit="handleAddRole"
       @close="resetAddForm"
     >
@@ -107,6 +128,8 @@
       :fields="editFormFields"
       :rules="editFormRules"
       :loading="rolesStore.loading"
+      :submit-text="$t('roles.form.buttons.submit')"
+      :cancel-text="$t('roles.form.buttons.cancel')"
       @submit="handleEditRole"
       @close="resetEditForm"
     >
@@ -199,11 +222,13 @@ import SearchInput from '@/components/SearchInput.vue'
 import { createRules } from '@/utils/validation'
 import { useRolesStore, type Role, type RoleFormData } from '@/stores/roles'
 import { usePermissionsStore } from '@/stores/permissions'
+import { useAuthStore } from '@/stores/auth'
 
 // Store
 const rolesStore = useRolesStore()
 const permissionsStore = usePermissionsStore()
 const { t } = useI18n()
+const authStore = useAuthStore()
 
 // Reactive state
 const searchQuery = ref('')
@@ -225,7 +250,7 @@ const editFormData = ref<Partial<RoleFormData>>({})
 
 // Table columns configuration
 const tableColumns = computed(() => [
-  { prop: 'id', label: '#', width: '60' },
+  { prop: 'index', label: '#', width: '60', slot: 'index' },
   { prop: 'name', label: t('roles.table.roleName'), width: '200' },
   { prop: 'permissions', label: t('roles.table.permissions'), minWidth: '300', slot: 'permissions' }
 ])
@@ -287,12 +312,27 @@ const hasActiveFilters = computed(() => {
   return searchQuery.value.trim() !== ''
 })
 
+const baseIndex = computed(() => {
+  const page = Number(rolesStore.currentPage) || 1
+  const size = Number(rolesStore.perPage) || filteredRoles.value.length || 0
+  return (page - 1) * size
+})
+
+// Permissions
+const canShow = computed(() => authStore.hasPermission('roles_show'))
+const canView = computed(() => authStore.hasPermission('roles_show'))
+const canEdit = computed(() => authStore.hasPermission('roles_update'))
+const canAdd = computed(() => authStore.hasPermission('roles_store'))
+const canDelete = computed(() => authStore.hasPermission('roles_destroy'))
+
 // Methods
 const openAddDialog = () => {
+  if (!canAdd.value) return
   showAddDialog.value = true
 }
 
 const openEditDialog = (role: Role) => {
+  if (!canEdit.value) return
   editingRole.value = role
   const perms = Array.isArray(role.permissions)
     ? mapRolePermissionNames(role.permissions)
@@ -310,6 +350,7 @@ const viewRole = (role: Role) => {
 }
 
 const handleDelete = (role: Role) => {
+  if (!canDelete.value) return
   confirmModalData.value = {
     title: t('roles.messages.deleteConfirm.title') as string,
     message: t('roles.messages.deleteConfirm.message', { name: role.name }) as string,
@@ -445,9 +486,13 @@ const viewingRolePermissionNames = computed(() => {
   return viewingRole.value ? mapRolePermissionNames(viewingRole.value.permissions as any) : []
 })
 
+function handlePageChange(page: number) {
+  rolesStore.fetchRoles(page)
+}
+
 // Lifecycle
 onMounted(() => {
-  rolesStore.fetchRoles()
+  rolesStore.fetchRoles(rolesStore.currentPage)
 })
 
 defineExpose({

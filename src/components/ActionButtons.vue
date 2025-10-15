@@ -40,9 +40,9 @@
     <!-- Status Toggle Switch -->
     <el-switch
       v-if="showStatus"
-      :model-value="item.is_active === 1"
+      :model-value="item.is_active === 1 || item.is_active === true"
       @change="handleStatusChange"
-      :title="item.is_active === 1 ? statusDisableTitle : statusEnableTitle"
+      :title="(item.is_active === 1 || item.is_active === true) ? statusDisableTitle : statusEnableTitle"
       active-color="#67C23A"
       inactive-color="#DCDFE6"
     />

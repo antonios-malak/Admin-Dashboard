@@ -32,6 +32,11 @@ export const useRolesStore = defineStore('roles', () => {
   const roles = ref<Role[]>([])
   const loading = ref(false)
   const error = ref<string | null>(null)
+  // server-side pagination state
+  const currentPage = ref(1)
+  const perPage = ref(10)
+  const totalItems = ref(0)
+  const lastPage = ref(1)
 
   // Getters
   const activeRoles = computed(() => 
@@ -54,7 +59,7 @@ export const useRolesStore = defineStore('roles', () => {
   )
 
   // Actions
-  const fetchRoles = async () => {
+  const fetchRoles = async (page = 1) => {
     try {
       loading.value = true
       error.value = null
@@ -62,12 +67,18 @@ export const useRolesStore = defineStore('roles', () => {
       // Fetch permissions first to populate availablePermissions
       await permissionsStore.fetchPermissions()
       
-      const response = await api.get('/roles')
-      roles.value = response.data.data || response.data
+      const response = await api.get('/roles', { params: { page } })
+      const payload = response.data || {}
+      roles.value = payload?.data || []
+      const meta = payload?.meta || {}
+      currentPage.value = Number(meta?.current_page) || page
+      perPage.value = Number(meta?.per_page) || perPage.value
+      totalItems.value = Number(meta?.total) || (Array.isArray(payload?.data) ? payload.data.length : 0)
+      lastPage.value = Number(meta?.last_page) || lastPage.value
       
-      notify('success', t('roles.messages.success.rolesFetched'), t('roles.title'))
+      notify('success', response.data.message || t('roles.messages.rolesFetched'), t('roles.title'))
     } catch (err: any) {
-      error.value = err?.response?.data?.message || t('roles.messages.error.fetchRoles')
+      error.value = err?.response?.data?.message 
       notify('error', error.value || t('roles.messages.error.fetchRoles'), t('roles.title'))
       throw err
     } finally {
@@ -209,6 +220,12 @@ export const useRolesStore = defineStore('roles', () => {
     loading,
     error,
     availablePermissions,
+    
+    // server pagination exports
+    currentPage,
+    perPage,
+    totalItems,
+    lastPage,
     
     // Getters
     activeRoles,

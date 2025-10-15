@@ -3,7 +3,7 @@
     <PageHeader 
       :title="$t('users.title')" 
       :subtitle="$t('users.subtitle')"
-      show-add-button
+      :show-add-button="canAdd"
       :add-button-text="$t('users.addButton')"
       @add="openAddDialog"
     />
@@ -32,11 +32,15 @@
 
     <!-- Users Data Table -->
     <DataTable
+      v-if="canShow"
       :data="filteredUsers"
       :columns="tableColumns"
       :loading="userStore.loading"
       :empty-message="$t('users.table.emptyMessage')"
     >
+      <template #index="{ index }">
+        <span>{{ baseIndex + index + 1 }}</span>
+      </template>
       <!-- Avatar Column -->
       <template #avatar="{ row }">
         <div class="flex items-center gap-2">
@@ -68,19 +72,31 @@
       <template #actions="{ row }">
         <ActionButtons
           :item="row"
-          :show-edit="true"
-          :show-delete="true"
-          :show-status="true"
-          edit-text=""
-          delete-text=""
-          status-disable-text=""
-          status-enable-text=""
+          :show-edit="canEdit"
+          :show-delete="canDelete"
+          :show-status="canToggle"
+          :edit-text="$t('common.actions.edit')"
+          :delete-text="$t('common.actions.delete')"
+          :status-disable-text="$t('common.actions.disable')"
+          :status-enable-text="$t('common.actions.enable')"
           @edit="openEditDialog"
           @delete="handleDelete"
           @toggleStatus="toggleUserStatus"
         />
       </template>
     </DataTable>
+
+    <!-- Server pagination controls -->
+    <div class="mt-4 flex items-center justify-end gap-2" v-if="userStore.lastPage > 1">
+      <el-pagination
+        background
+        layout="prev, pager, next"
+        :current-page="userStore.currentPage"
+        :page-size="userStore.perPage"
+        :total="userStore.totalItems"
+        @current-change="handlePageChange"
+      />
+    </div>
 
     <!-- Add User Dialog -->
     <FormDialog
@@ -90,6 +106,8 @@
       :fields="addFormFields"
       :rules="formRules"
       :loading="userStore.loading"
+      :submit-text="$t('users.form.buttons.submit')"
+      :cancel-text="$t('users.form.buttons.cancel')"
       @submit="handleAddUser"
       @close="resetAddForm"
     >
@@ -195,6 +213,8 @@
       :fields="editFormFields"
       :rules="editFormRules"
       :loading="userStore.loading"
+      :submit-text="$t('users.form.buttons.submit')"
+      :cancel-text="$t('users.form.buttons.cancel')"
       @submit="handleEditUser"
       @close="resetEditForm"
     >
@@ -271,8 +291,8 @@
       v-model="showConfirmModal"
       :title="confirmModalData?.title || ''"
       :message="confirmModalData?.message || ''"
-      confirm-text="Delete"
-      cancel-text="Cancel"
+      :confirm-text="$t('users.form.buttons.delete')"
+      :cancel-text="$t('users.form.buttons.cancel')"
       @confirm="handleConfirm"
       @cancel="handleCancel"
     />
@@ -335,12 +355,14 @@ import { createRules } from '@/utils/validation'
 import { useUserStore, type User, type UserFormData } from '@/stores/user'
 import { useRolesStore } from '@/stores/roles'
 import { useCountriesStore } from '@/stores/countries'
+import { useAuthStore } from '@/stores/auth'
 
 // Store
 const userStore = useUserStore()
 const rolesStore = useRolesStore()
 const countriesStore = useCountriesStore()
 const { t } = useI18n()
+const authStore = useAuthStore()
 
 // Reactive state
 const searchQuery = ref('')
@@ -399,6 +421,7 @@ const countryCodes = computed(() => countriesStore.options)
 
 // Table columns configuration
 const tableColumns = computed(() => [
+  { prop: 'index', label: '#', width: '60', slot: 'index' },
   { prop: 'avatar', label: t('users.table.avatar'), width: '80', slot: 'avatar' },
   { prop: 'name', label: t('users.table.name'), width: '150' },
   { prop: 'email', label: t('users.table.email'), width: '200' },
@@ -531,12 +554,27 @@ const hasActiveFilters = computed(() => {
   return searchQuery.value.trim() !== '' || statusFilter.value !== ''
 })
 
+const baseIndex = computed(() => {
+  const page = Number(userStore.currentPage) || 1
+  const size = Number(userStore.perPage) || filteredUsers.value.length || 0
+  return (page - 1) * size
+})
+
+// Permissions
+const canShow = computed(() => authStore.hasPermission('admins_show'))
+const canEdit = computed(() => authStore.hasPermission('admins_update'))
+const canAdd = computed(() => authStore.hasPermission('admins_store'))
+const canDelete = computed(() => authStore.hasPermission('admins_destroy'))
+const canToggle = computed(() => authStore.hasPermission('admins_toggle'))
+
 // Methods
 const openAddDialog = () => {
+  if (!canAdd.value) return
   showAddDialog.value = true
 }
 
 const openEditDialog = (user: User) => {
+  if (!canEdit.value) return
   console.log("userData" , user)
   editingUser.value = user
   
@@ -738,6 +776,7 @@ const handleEditUser = async (formData: Record<string, any>) => {
 }
 
 const toggleUserStatus = async (user: User) => {
+  if (!canToggle.value) return
   try {
     // If user is active (is_active === 1) and we're trying to deactivate, show reason modal
     if (user.is_active === 1) {
@@ -771,6 +810,7 @@ const handleDeactivation = async () => {
 }
 
 const handleDelete = (user: User) => {
+  if (!canDelete.value) return
   confirmModalData.value = {
     title: t('users.messages.deleteConfirm.title'),
     message: t('users.messages.deleteConfirm.message', { name: user.name }),
@@ -816,9 +856,13 @@ const clearFilters = () => {
   statusFilter.value = ''
 }
 
+function handlePageChange(page: number) {
+  userStore.fetchUsers(page)
+}
+
 // Lifecycle
 onMounted(() => {
-  userStore.fetchUsers()
+  userStore.fetchUsers(userStore.currentPage)
   rolesStore.fetchRoles()
   countriesStore.fetchCountries()
 })
